@@ -1,4 +1,4 @@
-# formula1-dataapp
+# Web app for displaying formula 1 data.
 
 ## Project setup
 ```
