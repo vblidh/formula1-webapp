@@ -1,13 +1,13 @@
 <template>
   <v-container>
-    <h1 class="title">{{this.Title}}</h1>
+    <h1 class="title">{{ getTitle }}</h1>
     <v-data-table
-      :headers="tableHeaders"
-      :items="tableData"
+      :headers="getHeaders"
+      :items="getData"
       item-key="Name"
       class="elevation-1"
-      items-per-page="20"
       hide-default-footer
+      disable-pagination
       @click:row="onRowClicked"
     >
     </v-data-table>
@@ -28,6 +28,17 @@ export default {
       tableHeaders: this.headers,
     };
   },
+  computed: {
+    getData() {
+      return this.data;
+    },
+    getHeaders() {
+      return this.headers;
+    },
+    getTitle() {
+      return this.title;
+    },
+  },
   methods: {
     onRowClicked(par1, par2) {
       console.log(par1);
@@ -35,22 +46,15 @@ export default {
     },
   },
   mounted() {
-    console.log("Title:", this.Title);
-    console.log("Tabledata: ", this.tableData);
-    console.log("Table headers: ", this.tableHeaders);
-  },
-  beforeMount() {
-    console.log("Title:", this.Title);
-    console.log("Tabledata: ", this.tableData);
-    console.log("Table headers: ", this.tableHeaders);
+    //console.log("Title:", this.Title);
+    //console.log("Tabledata: ", this.tableData);
+    //console.log("Table headers: ", this.tableHeaders);
   },
 };
 </script>
 
 <style scoped>
-
 .title {
-    text-align: center;
+  text-align: center;
 }
-
 </style>

@@ -1,6 +1,11 @@
 <template>
   <div class="home">
-    <DataTable v-if="gotData" :title="this.Title" :headers="this.tableHeaders" :data="this.tableData"></DataTable>
+    <DataTable
+      v-if="gotData"
+      :title="this.Title"
+      :headers="this.tableHeaders"
+      :data="this.tableData"
+    ></DataTable>
     <v-btn @click="getData">Collect Data</v-btn>
   </div>
 </template>
@@ -16,16 +21,10 @@ export default {
   data() {
     return {
       gotData: false,
-      Title:  "",
+      Title: "",
       data: {},
       tableData: [],
-      tableHeaders: [
-        { text : "Position", value : "Position"}, 
-        { text : "Name", value: "Name"}, 
-        { text : "Team", value:"Team"}, 
-        { text : "Time", value : "Time"}, 
-        { text : "Points", value : "Points"} 
-        ],
+      tableHeaders: [],
     };
   },
   methods: {
@@ -33,7 +32,7 @@ export default {
       this.data = {};
       this.tableData = [];
       this.axios
-        .get("/f1/current/last/results.json")
+        .get("current/last/results.json")
         .then((resp) => resp.data)
         .then((data) => (this.data = data.MRData))
         .finally(() => {
@@ -63,8 +62,15 @@ export default {
             this.tableData.push(obj);
           }
           console.log(this.tableData);
-          this.gotData = true;
+          this.tableHeaders = [
+            { text: "Position", value: "Position" },
+            { text: "Name", value: "Name" },
+            { text: "Team", value: "Team" },
+            { text: "Time", value: "Time" },
+            { text: "Points", value: "Points" },
+          ];
           this.Title = this.data.RaceTable.Races[0].raceName;
+          this.gotData = true;
           console.log(this.gotData);
         });
     },
