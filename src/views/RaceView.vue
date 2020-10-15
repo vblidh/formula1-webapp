@@ -22,14 +22,21 @@
         ></v-select>
       </v-col>
     </v-row>
-    <v-card color="red accent-4">
-      <v-card-title class="title">
-        {{ getRaceName }} <v-spacer></v-spacer> {{ getRaceDate }}</v-card-title
-      >
-      <v-card-subtitle>{{ getCircuit }}</v-card-subtitle>
-      <DataTable v-if="showTable" :headers="tableHeaders" :data="tableData">
-      </DataTable>
-    </v-card>
+    <v-row>
+      <v-col cols="2"></v-col>
+      <v-col>
+        <v-card color="red accent-4">
+          <v-card-title class="title">
+            {{ getRaceName }} <v-spacer></v-spacer>
+            {{ getRaceDate }}</v-card-title
+          >
+          <v-card-subtitle>{{ getCircuit }}</v-card-subtitle>
+          <DataTable v-if="showTable" :headers="tableHeaders" :data="tableData">
+          </DataTable>
+        </v-card>
+      </v-col>
+      <v-col cols="2"></v-col>
+    </v-row>
   </v-container>
 </template>
 
@@ -83,39 +90,74 @@ export default {
   },
   methods: {
     getRacesByYear() {
-      var url = this.Year + ".json";
-      this.axios
-        .get(url)
-        .then((resp) => resp.data)
-        .then((data) => {
-          console.log("Year:", this.Year);
-          console.log("New Races:", data);
-          var races = data.MRData.RaceTable.Races;
-          var tmp = [];
-          for (let index = 0; index < races.length; index++) {
-            var obj = {
-              text: races[index].raceName,
-              value: races[index].round,
-            };
-            tmp.push(obj);
-          }
+      var cachedRaces = localStorage.getItem("Races");
+      var isDataCached = false;
+      var parsed;
+      if (cachedRaces != null) {
+        parsed = JSON.parse(cachedRaces);
+        if (parsed[this.Year] != null) {
+          console.log("Found cached race", parsed[this.Year]);
           this.Races = [];
-          this.Races = Object.assign(this.Races, tmp);
-        });
+          this.Races = Object.assign(this.Races, parsed[this.Year]);
+          isDataCached = true;
+        }
+      }
+      if (!isDataCached) {
+        var url = this.Year + ".json";
+        this.axios
+          .get(url)
+          .then((resp) => resp.data)
+          .then((data) => {
+            console.log("Year:", this.Year);
+            console.log("New Races:", data);
+            var races = data.MRData.RaceTable.Races;
+            var tmp = [];
+            for (let index = 0; index < races.length; index++) {
+              var obj = {
+                text: races[index].raceName,
+                value: races[index].round,
+              };
+              tmp.push(obj);
+            }
+            this.Races = [];
+            this.Races = Object.assign(this.Races, tmp);
+            if (cachedRaces !== null) {
+              var parsed = JSON.parse(cachedRaces);
+              parsed[this.Year] = this.Races;
+              console.log("Updating localstorage with this season races");
+              localStorage.setItem("Races", JSON.stringify(parsed));
+            } else {
+              var toAdd = {};
+              toAdd[this.Year] = this.Races;
+              console.log("Creating new localstorage for races", toAdd);
+              localStorage.setItem("Races", JSON.stringify(toAdd));
+            }
+          });
+      }
     },
     getRaceResults() {
-      var url = this.Year + "/" + this.Round + "/results.json";
       this.tableData = [];
+      var cacheExists = false;
+      var cachedRaceResults = localStorage.getItem("RaceResults");
+
+      if (cachedRaceResults != null) {
+        var parsed = JSON.parse(cachedRaceResults);
+        var desiredKey = this.Year + "_" + this.Round;
+        if (parsed[desiredKey] != null) {
+          this.tableData = Object.assign(this.tableData, parsed[desiredKey]);
+          cacheExists = true;
+        }
+      }
+      var url = this.Year + "/" + this.Round + "/results.json";
+
       this.axios
         .get(url)
         .then((resp) => resp.data)
         .then((data) => (this.data = data.MRData))
-        .finally(() => {
-          //console.log("Race data:", this.data);
+        .then(() => {
           var results = this.data.RaceTable.Races[0].Results;
           var tmp = [];
           for (var i = 0; i < results.length; i++) {
-            //console.log(results[i]);
             var driver = results[i].Driver;
             var name = driver.givenName + " " + driver.familyName;
             var pos = results[i].position;
@@ -137,13 +179,21 @@ export default {
               Time: time,
               Points: points,
             };
-            //console.log(obj);
             tmp.push(obj);
           }
-          //this.tableData = Object.assign(this.tableData, tmp);
           this.tableData = tmp;
           console.log("Tabledata after: ", this.tableData);
-
+          var newKey = this.Year + "_" + this.Round;
+          if (cachedRaceResults != null) {
+            parsed[newKey] = this.tableData;
+            console.log("Updating race result cache with key", newKey);
+            localStorage.setItem("RaceResults", JSON.stringify(parsed));
+          } else {
+            parsed = {}
+            parsed[newKey] = this.tableData;
+            console.log("Creating new cache of race results with key", newKey);
+            localStorage.setItem("RaceResults", JSON.stringify(parsed));
+          }
           this.tableHeaders = [
             {
               text: "Position",
@@ -160,7 +210,6 @@ export default {
           this.RaceName = this.data.RaceTable.Races[0].raceName;
           this.Circuit = this.data.RaceTable.Races[0].Circuit.circuitName;
           this.RaceDate = this.data.RaceTable.Races[0].date;
-          console.log(this.RaceName);
           this.showTable = true;
         });
     },
@@ -172,6 +221,6 @@ export default {
   color: white !important;
 }
 .v-card__subtitle {
-  color:white !important;
+  color: white !important;
 }
 </style>

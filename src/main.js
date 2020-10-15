@@ -13,6 +13,8 @@ axios.defaults.baseURL = "https://ergast.com/api/f1/";
 Vue.use(VueCookies);
 Vue.use(VueAxios, axios);
 
+Vue.$cookies.config('30d');
+ 
 new Vue({
   router,
   vuetify,
