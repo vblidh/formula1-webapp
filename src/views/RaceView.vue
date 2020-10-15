@@ -30,7 +30,7 @@
         </v-select>
       </v-col>
       <v-col>
-        <v-btn x-large @click="getResults">Collect Data</v-btn>          
+        <v-btn x-large @click="getResults">Collect Data</v-btn>
       </v-col>
     </v-row>
     <v-row>
@@ -102,19 +102,22 @@ export default {
     },
   },
   methods: {
-    addResultToCache(newKey) {
-      var cache = localStorage.getItem("RaceResults");
+    addResultToCache(newKey, isRace = true) {
       var parsed;
+      var item;
+      if (isRace) item = "RaceResults";
+      else item = "QualifyingResults";
+      var cache = localStorage.getItem(item);
       if (cache != null) {
-        console.log("Updating race result cache with key", newKey);
+        console.log("Updating " + item + " cache with key", newKey);
         parsed = JSON.parse(cache);
         parsed[newKey] = this.data;
-        localStorage.setItem("RaceResults", JSON.stringify(parsed));
+        localStorage.setItem(item, JSON.stringify(parsed));
       } else {
-        console.log("Creating new cache of race results with key", newKey);
+        console.log("Creating new cache of " +  item + " with key", newKey);
         parsed = {};
         parsed[newKey] = this.data;
-        localStorage.setItem("RaceResults", JSON.stringify(parsed));
+        localStorage.setItem(item, JSON.stringify(parsed));
       }
     },
     getRacesByYear() {
@@ -163,13 +166,102 @@ export default {
           });
       }
     },
+    checkCache(isRace) {
+      var cacheExists = false;
+      var key = this.Year + "_" + this.Round;
+      var parsed;
+      if (isRace) {
+        var cachedRaceResults = localStorage.getItem("RaceResults");
+        if (cachedRaceResults != null) {
+          parsed = JSON.parse(cachedRaceResults);
+          if (parsed[key] != null) {
+            this.data = parsed[key];
+            console.log("Found cached raceresults with key", key);
+            cacheExists = true;
+          }
+        }
+      } else {
+        var cachedQualifyingResults = localStorage.getItem("QualifyingResults");
+        if (cachedQualifyingResults != null) {
+          parsed = JSON.parse(cachedQualifyingResults);
+          if (parsed[key] != null) {
+            this.data = parsed[key];
+            console.log("Found cached raceresults with key", key);
+            cacheExists = true;
+          }
+        }
+      }
+      return cacheExists;
+    },
     getResults() {
       if (this.ChosenSession === "Race") {
         this.getRaceResults();
-      }
-      else {
+      } else {
         console.log("Getting qualification results");
+        this.getQualiResults();
       }
+    },
+    async getQualiResults() {
+      this.tableData = [];
+      var cacheExists = this.checkCache(false);
+      if (!cacheExists) {
+        var url = this.Year + "/" + this.Round + "/qualifying.json";
+        var key = this.Year + "_" + this.Round;
+        await this.axios
+          .get(url)
+          .then((resp) => resp.data)
+          .then((data) => (this.data = data.MRData));
+        this.addResultToCache(key, false);
+      }
+      var results = this.data.RaceTable.Races[0].QualifyingResults;
+      var tmp = [];
+      for (var i = 0; i < results.length; i++) {
+        var driver = results[i].Driver;
+        var name = driver.givenName + " " + driver.familyName;
+        var pos = results[i].position;
+        var constructor = results[i].Constructor.name;
+        var q2;
+        var q3;
+        var q1 = results[i].Q1;
+        if (q1 == null) {
+          q1 = q2 = q3 = "Did not qualify";
+        } else {
+          q2 = results[i].Q2;
+          if (q2 == null) {
+            q2 = q3 = "-";
+          } else {
+            q3 = results[i].Q3;
+          }
+        }
+        var obj = {
+          Position: pos,
+          Name: name,
+          Team: constructor,
+          Q1: q1,
+          Q2: q2,
+          Q3: q3,
+        };
+        tmp.push(obj);
+      }
+      this.tableData = tmp;
+      this.tableHeaders = [
+        {
+          text: "Position",
+          value: "Position",
+          divider: true,
+          align: "center",
+          width: "4",
+        },
+        { text: "Name", value: "Name", divider: true, align: "center" },
+        { text: "Team", value: "Team", divider: true, align: "center" },
+        { text: "Q1", value: "Q1", divider: true, align: "center" },
+        { text: "Q2", value: "Q2", divider: true, align: "center" },
+        { text: "Q3", value: "Q3", divider: true, align: "center" },
+      ];
+      this.RaceName = this.data.RaceTable.Races[0].raceName;
+      this.Circuit = this.data.RaceTable.Races[0].Circuit.circuitName;
+      this.RaceDate = this.data.RaceTable.Races[0].date;
+      this.showTable = true;
     },
     async getRaceResults() {
       this.tableData = [];
