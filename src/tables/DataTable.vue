@@ -1,6 +1,5 @@
 <template>
   <v-container>
-    <h1 class="title">{{ getTitle }}</h1>
     <v-data-table
       :headers="getHeaders"
       :items="getData"
@@ -8,6 +7,7 @@
       class="elevation-1"
       hide-default-footer
       disable-pagination
+      disable-sort
       @click:row="onRowClicked"
     >
     </v-data-table>
@@ -17,15 +17,12 @@
 <script>
 export default {
   props: {
-    title: String,
     headers: Array,
     data: Array,
   },
   data() {
     return {
-      Title: this.title,
-      tableData: this.data,
-      tableHeaders: this.headers,
+
     };
   },
   computed: {
@@ -34,9 +31,6 @@ export default {
     },
     getHeaders() {
       return this.headers;
-    },
-    getTitle() {
-      return this.title;
     },
   },
   methods: {
@@ -54,7 +48,7 @@ export default {
 </script>
 
 <style scoped>
-.title {
-  text-align: center;
+.elevation-1 {
+  background: whitesmoke !important;
 }
 </style>

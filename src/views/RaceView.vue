@@ -22,13 +22,14 @@
         ></v-select>
       </v-col>
     </v-row>
-    <DataTable
-      v-if="showTable"
-      :title="this.Title"
-      :headers="tableHeaders"
-      :data="tableData"
-    >
-    </DataTable>
+    <v-card color="red accent-4">
+      <v-card-title class="title">
+        {{ getRaceName }} <v-spacer></v-spacer> {{ getRaceDate }}</v-card-title
+      >
+      <v-card-subtitle>{{ getCircuit }}</v-card-subtitle>
+      <DataTable v-if="showTable" :headers="tableHeaders" :data="tableData">
+      </DataTable>
+    </v-card>
   </v-container>
 </template>
 
@@ -53,8 +54,9 @@ export default {
       data: {},
       tableData: [],
       tableHeaders: [],
-      Title: "",
+      RaceName: "",
       Circuit: "",
+      RaceDate: "",
       Year: this.year,
       Round: this.round,
       Races: [],
@@ -62,13 +64,22 @@ export default {
     };
   },
   beforeMount() {
-      this.getRacesByYear();
-      this.getRaceResults();
-      for (let i = 2020; i > 1949; i-- ) {
-          this.Seasons.push({text: String(i), value: i});
-      }
+    this.getRacesByYear();
+    this.getRaceResults();
+    for (let i = 2020; i > 1949; i--) {
+      this.Seasons.push({ text: String(i), value: i });
+    }
   },
   computed: {
+    getRaceName() {
+      return this.RaceName;
+    },
+    getCircuit() {
+      return this.Circuit;
+    },
+    getRaceDate() {
+      return this.RaceDate;
+    },
   },
   methods: {
     getRacesByYear() {
@@ -77,8 +88,8 @@ export default {
         .get(url)
         .then((resp) => resp.data)
         .then((data) => {
-            console.log("Year:", this.Year);
-            console.log("New Races:", data)
+          console.log("Year:", this.Year);
+          console.log("New Races:", data);
           var races = data.MRData.RaceTable.Races;
           var tmp = [];
           for (let index = 0; index < races.length; index++) {
@@ -110,15 +121,13 @@ export default {
             var pos = results[i].position;
             var constructor = results[i].Constructor.name;
             var time;
-            var status = results[i].status; 
+            var status = results[i].status;
             if (status === "Finished") {
               time = results[i].Time.time;
-            }
-            else if (status.startsWith("+")) {
-                time = status;
-            } 
-            else {
-              time = "DNF ("  + status + ")";
+            } else if (status.startsWith("+")) {
+              time = status;
+            } else {
+              time = "DNF (" + status + ")";
             }
             var points = results[i].points;
             var obj = {
@@ -136,22 +145,33 @@ export default {
           console.log("Tabledata after: ", this.tableData);
 
           this.tableHeaders = [
-            { text: "Position", value: "Position" },
-            { text: "Name", value: "Name" },
-            { text: "Team", value: "Team" },
-            { text: "Time", value: "Time" },
-            { text: "Points", value: "Points" },
+            {
+              text: "Position",
+              value: "Position",
+              divider: true,
+              align: "center",
+              width: "4",
+            },
+            { text: "Name", value: "Name", divider: true, align: "center" },
+            { text: "Team", value: "Team", divider: true, align: "center" },
+            { text: "Time", value: "Time", divider: true, align: "center" },
+            { text: "Points", value: "Points", divider: true, align: "center" },
           ];
-          var raceName = this.data.RaceTable.Races[0].raceName;
-          var circuit = this.data.RaceTable.Races[0].Circuit.circuitName;
-          this.Title = raceName + " - " + circuit;
+          this.RaceName = this.data.RaceTable.Races[0].raceName;
+          this.Circuit = this.data.RaceTable.Races[0].Circuit.circuitName;
+          this.RaceDate = this.data.RaceTable.Races[0].date;
+          console.log(this.RaceName);
           this.showTable = true;
-          this.$forceUpdate();
         });
     },
   },
 };
 </script>
-
 <style scoped>
+.v-card__title {
+  color: white !important;
+}
+.v-card__subtitle {
+  color:white !important;
+}
 </style>
