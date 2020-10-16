@@ -13,8 +13,8 @@
       </v-col>
       <v-col cols="6">
         <v-select
-          hint="Choose a circuit"
-          label="Round"
+          hint="Choose a race"
+          label="Race"
           :items="Races"
           v-model="Round"
           outlined
@@ -84,6 +84,7 @@ export default {
     };
   },
   beforeMount() {
+    this.test();
     this.getRacesByYear();
     this.getRaceResults();
     for (let i = 2020; i > 1949; i--) {
@@ -102,6 +103,12 @@ export default {
     },
   },
   methods: {
+    async test() {
+      var resp = await this.$store.dispatch("getDataFromAPI", {
+        url: "current/last/results.json",
+      });
+      console.log("Resp from store:", resp);
+    },
     addResultToCache(newKey, isRace = true) {
       var parsed;
       var item;
@@ -114,7 +121,7 @@ export default {
         parsed[newKey] = this.data;
         localStorage.setItem(item, JSON.stringify(parsed));
       } else {
-        console.log("Creating new cache of " +  item + " with key", newKey);
+        console.log("Creating new cache of " + item + " with key", newKey);
         parsed = {};
         parsed[newKey] = this.data;
         localStorage.setItem(item, JSON.stringify(parsed));
