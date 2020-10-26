@@ -20,11 +20,12 @@ const routes = [
     component: () => import(/* webpackChunkName: "about" */ '../views/About.vue')
   },
   {
-    path: '/races/:year/:round',
+    path: '/races/:year?/:round?',
     name: "Races",
     component: RaceView,
-    props: true,
-  }
+    props: true
+  },
+
 ]
 
 const router = new VueRouter({

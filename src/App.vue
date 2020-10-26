@@ -8,7 +8,7 @@
                 <v-tab> Drivers</v-tab>
                 <v-tab> Teams </v-tab>
                 <v-tab> Circuits </v-tab>
-                <v-tab to="/races/current/last" > Races </v-tab>
+                <v-tab to="/races" > Races </v-tab>
                 <v-tab to="/about"> Schedule </v-tab>
             </v-tabs> 
         </template>

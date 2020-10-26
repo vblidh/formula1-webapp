@@ -58,9 +58,11 @@ export default {
   props: {
     year: {
       type: String,
+      default: '2020',
     },
     round: {
       type: String,
+      default: '1',
     },
   },
   components: {
@@ -84,7 +86,6 @@ export default {
     };
   },
   beforeMount() {
-    this.test();
     this.getRacesByYear();
     this.getRaceResults();
     for (let i = 2020; i > 1949; i--) {
@@ -104,10 +105,14 @@ export default {
   },
   methods: {
     async test() {
-      var resp = await this.$store.dispatch("getDataFromAPI", {
-        url: "current/last/results.json",
-      });
-      console.log("Resp from store:", resp);
+      try {
+        var resp = await this.$store.dispatch("getDataFromAPI", {
+          url: "results/race?year=2020&round=11",
+        });
+        console.log("Resp from store:", resp);
+      } catch (error) {
+        console.log(error);
+      }
     },
     addResultToCache(newKey, isRace = true) {
       var parsed;
@@ -127,7 +132,7 @@ export default {
         localStorage.setItem(item, JSON.stringify(parsed));
       }
     },
-    getRacesByYear() {
+    async getRacesByYear() {
       var cachedRaces = localStorage.getItem("Races");
       var isDataCached = false;
       var parsed;
@@ -141,36 +146,32 @@ export default {
         }
       }
       if (!isDataCached) {
-        var url = this.Year + ".json";
-        this.axios
-          .get(url)
-          .then((resp) => resp.data)
-          .then((data) => {
-            console.log("Year:", this.Year);
-            console.log("New Races:", data);
-            var races = data.MRData.RaceTable.Races;
-            var tmp = [];
-            for (let index = 0; index < races.length; index++) {
-              var obj = {
-                text: races[index].raceName,
-                value: races[index].round,
-              };
-              tmp.push(obj);
-            }
-            this.Races = [];
-            this.Races = Object.assign(this.Races, tmp);
-            if (cachedRaces !== null) {
-              var parsed = JSON.parse(cachedRaces);
-              parsed[this.Year] = this.Races;
-              console.log("Updating localstorage with this season races");
-              localStorage.setItem("Races", JSON.stringify(parsed));
-            } else {
-              var toAdd = {};
-              toAdd[this.Year] = this.Races;
-              console.log("Creating new localstorage for races", toAdd);
-              localStorage.setItem("Races", JSON.stringify(toAdd));
-            }
-          });
+        var url = "/races?year="+this.Year;
+        var data = await this.$store.dispatch("getDataFromAPI", { url: url });
+        console.log("Year:", this.Year);
+        console.log("New Races:", data);
+        var races = data.races;
+        var tmp = [];
+        for (let index = 0; index < races.length; index++) {
+          var obj = {
+            text: races[index].name,
+            value: races[index].round,
+          };
+          tmp.push(obj);
+        }
+        this.Races = [];
+        this.Races = Object.assign(this.Races, tmp);
+        if (cachedRaces !== null) {
+          parsed = JSON.parse(cachedRaces);
+          parsed[this.Year] = this.Races;
+          console.log("Updating localstorage with this season races");
+          localStorage.setItem("Races", JSON.stringify(parsed));
+        } else {
+          var toAdd = {};
+          toAdd[this.Year] = this.Races;
+          console.log("Creating new localstorage for races", toAdd);
+          localStorage.setItem("Races", JSON.stringify(toAdd));
+        }
       }
     },
     checkCache(isRace) {
@@ -212,12 +213,13 @@ export default {
       this.tableData = [];
       var cacheExists = this.checkCache(false);
       if (!cacheExists) {
-        var url = this.Year + "/" + this.Round + "/qualifying.json";
+        var url = "/results/race?year=" + this.year + "&round=" + this.round;
         var key = this.Year + "_" + this.Round;
         await this.axios
           .get(url)
           .then((resp) => resp.data)
-          .then((data) => (this.data = data.MRData));
+          .then((data) => (this.data = data));
+        console.log(this.data);
         this.addResultToCache(key, false);
       }
       var results = this.data.RaceTable.Races[0].QualifyingResults;
@@ -284,26 +286,35 @@ export default {
           cacheExists = true;
         }
       }
-      var url = this.Year + "/" + this.Round + "/results.json";
+      var url;
+      if (this.Year && this.Round) {
+        url = "/results/race?year=" + this.Year + "&round=" + this.Round;
+      }
+      else if (this.Year) {
+        url = "results/race/?year="+this.Year;
+      }
+      else {
+        url = "/results/race";
+      }
       if (!cacheExists) {
+        // TODO: Change to store dispatch
         await this.axios
           .get(url)
           .then((resp) => resp.data)
-          .then((data) => (this.data = data.MRData));
+          .then((data) => (this.data = data.race_results[0]));
         this.addResultToCache(raceKey);
       }
-
-      var results = this.data.RaceTable.Races[0].Results;
+      var results = this.data.results;
       var tmp = [];
       for (var i = 0; i < results.length; i++) {
-        var driver = results[i].Driver;
-        var name = driver.givenName + " " + driver.familyName;
-        var pos = results[i].position;
-        var constructor = results[i].Constructor.name;
+        var driver = results[i].driver;
+        var name = driver.first_name + " " + driver.last_name;
+        var pos = results[i].position_order;
+        var constructor = results[i].team.name;
         var time;
         var status = results[i].status;
         if (status === "Finished") {
-          time = results[i].Time.time;
+          time = results[i].time;
         } else if (status.startsWith("+")) {
           time = status;
         } else {
@@ -313,7 +324,7 @@ export default {
         var obj = {
           Position: pos,
           Name: name,
-          Team: constructor,
+          Team: constructor,  
           Time: time,
           Points: points,
         };
@@ -334,9 +345,9 @@ export default {
         { text: "Time", value: "Time", divider: true, align: "center" },
         { text: "Points", value: "Points", divider: true, align: "center" },
       ];
-      this.RaceName = this.data.RaceTable.Races[0].raceName;
-      this.Circuit = this.data.RaceTable.Races[0].Circuit.circuitName;
-      this.RaceDate = this.data.RaceTable.Races[0].date;
+      this.RaceName = this.data.race.name;
+      this.Circuit = this.data.race.circuit.name
+      this.RaceDate = this.data.race.date;
       this.showTable = true;
     },
   },
