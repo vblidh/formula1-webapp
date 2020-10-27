@@ -213,22 +213,23 @@ export default {
       this.tableData = [];
       var cacheExists = this.checkCache(false);
       if (!cacheExists) {
-        var url = "/results/race?year=" + this.year + "&round=" + this.round;
+        var url = "/results/qualifying?year=" + this.Year + "&round=" + this.Round;
         var key = this.Year + "_" + this.Round;
         await this.axios
           .get(url)
           .then((resp) => resp.data)
-          .then((data) => (this.data = data));
+          .then((data) => (this.data = data.qualifying_results[0]));
         console.log(this.data);
         this.addResultToCache(key, false);
       }
-      var results = this.data.RaceTable.Races[0].QualifyingResults;
+      console.log(this.data)
+      var results = this.data.results;
       var tmp = [];
       for (var i = 0; i < results.length; i++) {
-        var driver = results[i].Driver;
-        var name = driver.givenName + " " + driver.familyName;
+        var driver = results[i].driver;
+        var name = driver.first_name + " " + driver.last_name;
         var pos = results[i].position;
-        var constructor = results[i].Constructor.name;
+        var constructor = results[i].team.name;
         var q2;
         var q3;
         var q1 = results[i].Q1;
@@ -267,9 +268,9 @@ export default {
         { text: "Q2", value: "Q2", divider: true, align: "center" },
         { text: "Q3", value: "Q3", divider: true, align: "center" },
       ];
-      this.RaceName = this.data.RaceTable.Races[0].raceName;
-      this.Circuit = this.data.RaceTable.Races[0].Circuit.circuitName;
-      this.RaceDate = this.data.RaceTable.Races[0].date;
+      this.RaceName = this.data.race.name;
+      this.Circuit = this.data.race.circuit.name;
+      this.RaceDate = this.data.race.date;
       this.showTable = true;
     },
     async getRaceResults() {
