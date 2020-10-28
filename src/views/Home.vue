@@ -1,22 +1,22 @@
 <template>
   <div class="home">
-    <DataTable
+    <RaceTable
       v-if="gotData"
       :title="this.Title"
       :headers="this.tableHeaders"
       :data="this.tableData"
-    ></DataTable>
+    ></RaceTable>
     <v-btn @click="getData">Collect Data</v-btn>
   </div>
 </template>
 
 <script>
 // @ is an alias to /src
-import DataTable from "@/tables/DataTable.vue";
+import RaceTable from "@/tables/RaceTable.vue";
 export default {
   name: "Home",
   components: {
-    DataTable,
+    RaceTable,
   },
   data() {
     return {

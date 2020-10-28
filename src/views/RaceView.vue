@@ -42,8 +42,8 @@
             {{ getRaceDate }}</v-card-title
           >
           <v-card-subtitle>{{ getCircuit }}</v-card-subtitle>
-          <DataTable v-if="showTable" :headers="tableHeaders" :data="tableData">
-          </DataTable>
+          <RaceTable v-if="showTable" :headers="tableHeaders" :data="tableData">
+          </RaceTable>
         </v-card>
       </v-col>
       <v-col cols="2"></v-col>
@@ -52,7 +52,7 @@
 </template>
 
 <script>
-import DataTable from "@/tables/DataTable.vue";
+import RaceTable from "@/tables/RaceTable.vue";
 
 export default {
   props: {
@@ -66,7 +66,7 @@ export default {
     },
   },
   components: {
-    DataTable,
+    RaceTable,
   },
   data() {
     return {

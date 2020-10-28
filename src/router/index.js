@@ -2,7 +2,8 @@ import Vue from 'vue'
 import VueRouter from 'vue-router'
 import Home from '../views/Home.vue'
 import RaceView from '../views/RaceView.vue';
-import DriverView from '../views/DriverView.vue';
+import DriverPage from '../views/DriverPage.vue';
+import StandingsPage from '../views/StandingsPage.vue';
 
 Vue.use(VueRouter)
 
@@ -22,16 +23,21 @@ const routes = [
   },
   {
     path: '/races/:year?/:round?',
-    name: "races",
+    name: "Races",
     component: RaceView,
     props: true
   },
   {
     path: '/drivers/:driverId?',
-    name: 'driver',
-    component: DriverView,
+    name: 'Drivers',
+    component: DriverPage,
     props: true
   },
+  {
+    path: '/standings',
+    name: 'Standings',
+    component: StandingsPage,
+  }
 ]
 
 const router = new VueRouter({

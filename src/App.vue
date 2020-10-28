@@ -4,7 +4,7 @@
       <v-app-bar-nav-icon> </v-app-bar-nav-icon>
       <template>
         <v-tabs>
-          <v-tab to="/"> Standings </v-tab>
+          <v-tab to="/standings?year=2020&round=1"> Standings </v-tab>
           <v-tab to="/drivers"> Drivers</v-tab>
           <v-tab> Teams </v-tab>
           <v-tab> Circuits </v-tab>
