@@ -2,9 +2,22 @@
   <v-container>
     <v-card>
       <v-card-title
-        >{{ this.title }} <v-spacer></v-spacer> {{ this.date }}</v-card-title
+        ><v-spacer></v-spacer> {{ this.title }} <v-spacer></v-spacer></v-card-title
       >
       <v-card-subtitle>subtitle</v-card-subtitle>
+      <v-card-actions>
+        <v-slider
+        hint="Choose which round of season to display standings from" 
+        label="Round"
+        min="0"
+        :max="getRounds"
+        color="red accent-4"
+        background-color="white"
+        hide-details="auto"
+        thumb-label="always"
+        @end="onChoseRound"
+        ></v-slider>
+      </v-card-actions>
       <v-data-table
         :items="getItems"
         :headers="getHeaders"
@@ -37,7 +50,10 @@ export default {
         },
         isLoading: {
             type: Boolean
-        }
+        },
+        rounds: {
+          type: Number
+        },
     },
   data() {
     return {
@@ -49,7 +65,15 @@ export default {
       },
       getHeaders() {
           return this.headers;
+      },
+      getRounds() {
+        return this.rounds;
       }
+  },
+  methods: {
+    onChoseRound(value) {
+      console.log(value);
+    }
   },
 };
 </script>
