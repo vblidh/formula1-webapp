@@ -1,11 +1,9 @@
 <template>
-  <v-container>
     <Table
       :title="title"
       :isLoading="isLoading"
       :rounds="currentYearRounds"
     ></Table>
-  </v-container>
 </template> 
 
 <script>

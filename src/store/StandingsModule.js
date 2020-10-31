@@ -27,12 +27,23 @@ export default {
             { text: "Wins (season)", value: "Wins", divider: true, align: "center", width: "5" },
         ],
         teamStandingsHeader: [
-            //TODO: Add team columns
+            {
+                text: "Position",
+                value: "Position",
+                divider: true,
+                align: "center",
+                width: "4",
+            },
+            { text: "Name", value: "Name", divider: true, align: "center" },
+            { text: "Country", value: "Country", divider: true, align: "center" },
+            { text: "Points", value: "Points", divider: true, align: "center" },
+            { text: "Wins (season)", value: "Wins", divider: true, align: "center", width: "5" },
         ],
         currentYear: 2020,
         currentMode: "drivers",
         currentRound: 1,
         totalSeasonRound: 0,
+        currentDate: "",
 
     },
     getters: {
@@ -59,6 +70,9 @@ export default {
         totalRounds: state => {
             return state.totalSeasonRound;
         },
+        currentDate: state => {
+            return state.currentDate;
+        }
     },
     mutations: {
         updateStandings(state, payload) {
@@ -78,57 +92,84 @@ export default {
         },
         updateSeasonRounds(state, payload) {
             state.totalSeasonRound = payload;
+        },
+        updateDate(state, payload) {
+            state.currentDate = payload;
         }
     },
     actions: {
         async getNewStandings({ state, commit, dispatch }, payload) {
-
+            var mode;
             if (!Object.is(payload, undefined)) {
-                if (!(Object.is(payload.year, undefined) || isNaN(Number(payload.year)))){
+                if (!(Object.is(payload.year, undefined) || isNaN(Number(payload.year)))) {
                     commit('updateYear', Number(payload.year));
+                    console.log("Got year");
                 }
-                if (!(Object.is(payload.round, undefined) || isNaN(Number(payload.round)))){
+                if (!(Object.is(payload.round, undefined) || isNaN(Number(payload.round)))) {
                     commit('updateRound', Number(payload.round));
+                    console.log("Got round");
                 }
-                if (Object.is(payload.mode, String)) {
-                    commit('updateMode', payload.mode)
+                if (!Object.is(payload.mode, undefined)) {
+                    mode = payload.mode;
+                    console.log("Got mode");
                 }
             }
-            var url = '/standings/' + state.currentMode + '?year=' + state.currentYear + '&round=' + state.currentRound;
+            if (Object.is(mode, undefined)) mode = state.currentMode;
+            var url = '/standings/' + mode + '?year=' + state.currentYear + '&round=' + state.currentRound;
 
             var data = await dispatch('getDataFromAPI', { url });
             var standings;
-            if (state.currentMode === "drivers") {
+            var tmp = [];
+            var st, driverName, teamName, country, points, position, wins, number, obj, date;
+            if (mode === "drivers") {
                 standings = data.driver_standings[0].standings;
+                date = data.driver_standings[0].race.date;
+                for (var i = 0; i < standings.length; i++) {
+                    st = standings[i];
+                    driverName = st.driver.first_name + " " + st.driver.last_name;
+                    country = st.driver.nationality;
+                    number = st.driver.number;
+                    points = st.points;
+                    wins = st.wins;
+                    position = st.position;
+                    obj = {
+                        Position: position,
+                        Name: driverName,
+                        Number: number,
+                        Nationality: country,
+                        Points: points,
+                        Wins: wins,
+                    };
+                    tmp.push(obj);
+                }
             }
             else {
                 standings = data.team_standings[0].standings;
+                date = data.team_standings[0].race.date;
+                for (var j = 0; j < standings.length; j++) {
+                    st = standings[j];
+                    teamName = st.team.name;
+                    country = st.team.country;
+                    position = st.position;
+                    points = st.points;
+                    wins = st.wins;
+                    obj = {
+                        Position: position,
+                        Name: teamName,
+                        Country: country,
+                        Points: points,
+                        Wins: wins
+                    }
+                    tmp.push(obj);
+                }
             }
-            var tmp = [];
-            for (var i = 0; i < standings.length; i++) {
-                var st = standings[i];
-                var driverName = st.driver.first_name + " " + st.driver.last_name;
-                var nationality = st.driver.nationality;
-                var number = st.driver.number;
-                var points = st.points;
-                var wins = st.wins;
-                var position = st.position;
-                var obj = {
-                    Position: position,
-                    Name: driverName,
-                    Number: number,
-                    Nationality: nationality,
-                    Points: points,
-                    Wins: wins,
-                };
-                tmp.push(obj);
-
-            }
-
             commit('updateStandings', tmp);
+            commit('updateMode', mode);
+            commit('updateDate', date);
+
         },
         async getRoundsInYear({ state, commit, dispatch }, payload) {
-            if (!Object.is(payload, undefined)){
+            if (!Object.is(payload, undefined)) {
                 if (!(Object.is(payload.year, undefined) || isNaN(Number(payload.year)))) {
                     commit('updateYear', payload.year);
                 }
@@ -136,7 +177,7 @@ export default {
             var url = '/races/rounds?year=' + state.currentYear;
 
             var rounds = await dispatch('getDataFromAPI', { url });
-
+            
             commit('updateSeasonRounds', Number(rounds));
 
         },
