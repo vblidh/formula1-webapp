@@ -1,9 +1,6 @@
 <template>
-    <Table
-      :title="title"
-      :isLoading="isLoading"
-      :rounds="currentYearRounds"
-    ></Table>
+    <StandingsTable
+    ></StandingsTable>
 </template> 
 
 <script>
@@ -11,7 +8,7 @@ import StandingsTable from "../tables/StandingsTable.vue";
 // import { mapActions } from "vuex";
 export default {
   components: {
-    Table: StandingsTable,
+    StandingsTable
   },
   data() {
     return {
@@ -31,19 +28,19 @@ export default {
     var round =this.$route.query.round;
     var mode = this.$route.query.mode;
     if (!(Object.is(year, undefined) || isNaN(Number(year)))) {
-      this.$store.commit('updateYear', Number(this.$route.query.year))
+      this.$store.commit('StandingsModule/updateYear', Number(this.$route.query.year))
     }
      if (!(Object.is(round, undefined) || isNaN(Number(round)))){
-       this.$store.commit('updateRound', Number(round))
+       this.$store.commit('StandingsModule/updateRound', Number(round))
      }
     if (mode === "drivers" || mode === "teams"){
-      this.$store.commit('updateMode', mode);
+      this.$store.commit('StandingsModule/updateMode', mode);
     }
 
 
     this.title = "Standings";
     //this.$store.commit('updateMode', "drivers");
-    await this.$store.dispatch("getNewStandings", {});
+    await this.$store.dispatch("StandingsModule/getNewStandings", {});
 
     // var url = "/standings/";
     // if (this.year === "latest") {

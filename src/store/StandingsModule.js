@@ -1,4 +1,5 @@
 export default {
+    namespaced: true,
     state: {
         currentStandingsData: [],
         driverStandingsHeader: [
@@ -117,7 +118,7 @@ export default {
             if (Object.is(mode, undefined)) mode = state.currentMode;
             var url = '/standings/' + mode + '?year=' + state.currentYear + '&round=' + state.currentRound;
 
-            var data = await dispatch('getDataFromAPI', { url });
+            var data = await dispatch('getDataFromAPI', { url }, { root: true });
             var standings;
             var tmp = [];
             var st, driverName, teamName, country, points, position, wins, number, obj, date;
@@ -176,8 +177,8 @@ export default {
             }
             var url = '/races/rounds?year=' + state.currentYear;
 
-            var rounds = await dispatch('getDataFromAPI', { url });
-            
+            var rounds = await dispatch('getDataFromAPI', { url }, { root: true });
+
             commit('updateSeasonRounds', Number(rounds));
 
         },

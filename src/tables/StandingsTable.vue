@@ -77,11 +77,6 @@
 import { mapGetters } from "vuex";
 
 export default {
-  props: {
-    rounds: {
-      type: Number,
-    },
-  },
   data() {
     return {
       round: 1,
@@ -93,14 +88,14 @@ export default {
   },
   computed: {
     ...mapGetters({
-      getItems: "currentStandingsData",
-      getHeaders: "currentStandingsHeader",
-      getRounds: "totalRounds",
-      getRound: "currentRound",
+      getItems: "StandingsModule/currentStandingsData",
+      getHeaders: "StandingsModule/currentStandingsHeader",
+      getRounds: "StandingsModule/totalRounds",
+      getRound: "StandingsModule/currentRound",
       getSeasons: "Seasons",
-      getMode: "currentMode",
-      getYear: "currentYear",
-      getDate: "currentDate",
+      getMode: "StandingsModule/currentMode",
+      getYear: "StandingsModule/currentYear",
+      getDate: "StandingsModule/currentDate",
     }),
     getTitle() {
       return this.getYear + " " + this.modeText + " World Championship";
@@ -117,13 +112,13 @@ export default {
       // var queries = Object.assign({}, this.$route.query);
       // queries.round = value;
       // this.$router.replace({ query: queries });
-      this.$store.commit("updateRound", value);
-      this.$store.dispatch("getNewStandings", {});
+      this.$store.commit("StandingsModule/updateRound", value);
+      this.$store.dispatch("StandingsModule/getNewStandings", {});
     },
     async onChangeYear(value) {
       console.log(value);
-      await this.$store.dispatch("getNewStandings", { year: value, round: 1 });
-      await this.$store.dispatch("getRoundsInYear");
+      await this.$store.dispatch("StandingsModule/getNewStandings", { year: value, round: 1 });
+      await this.$store.dispatch("StandingsModule/getRoundsInYear");
       this.title = this.getYear + " " + this.modeText + " World Championship";
     },
     nextRound() {
@@ -149,7 +144,7 @@ export default {
         mode = "teams";
         this.modeText = "Constructors";
       }
-      await this.$store.dispatch("getNewStandings", { mode });
+      await this.$store.dispatch("StandingsModule/getNewStandings", { mode });
     },
   },
   mounted() {
@@ -158,7 +153,7 @@ export default {
     } else {
       this.modeText = "Constructors";
     }
-    this.$store.dispatch("getRoundsInYear");
+    this.$store.dispatch("StandingsModule/getRoundsInYear");
   },
 };
 </script>
