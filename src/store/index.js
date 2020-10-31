@@ -6,6 +6,12 @@ Vue.use(Vuex)
 
 export default new Vuex.Store({
   state: {
+    Seasons: Array.from({length:71}, (_, i) => i + 1950) 
+  },
+  getters: {
+    Seasons: state => {
+      return state.Seasons;
+    },
   },
   mutations: {
   },
