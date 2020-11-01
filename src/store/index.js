@@ -27,7 +27,7 @@ export default new Vuex.Store({
     }
   },
   modules: {
-    Standings, 
+    Standings,
     Results,
   }
 })

@@ -53,6 +53,7 @@
 
 <script>
 import RaceTable from "@/tables/RaceTable.vue";
+import { mapGetters } from 'vuex';
 
 export default {
   props: {
@@ -93,6 +94,10 @@ export default {
     }
   },
   computed: {
+    ...mapGetters({
+      getYear: 'results/currentYear',
+      getRound: 'results/currentRound',
+    }),
     getRaceName() {
       return this.RaceName;
     },
@@ -351,7 +356,7 @@ export default {
       this.RaceDate = this.data.race.date;
       this.showTable = true;
     },
-  },
+  },  
 };
 </script>
 <style scoped>

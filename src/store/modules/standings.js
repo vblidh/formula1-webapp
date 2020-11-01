@@ -120,7 +120,7 @@ export default {
             if (!exists) {
                 var url = '/standings/' + mode + '?year=' + state.currentYear + '&round=' + state.currentRound;
                 data = await dispatch('getDataFromAPI', { url }, { root: true });
-                dispatch('addDataToCache', data);
+                dispatch('addDataToCache', {data, mode});
             }
             var standings;
             var tmp = [];
@@ -168,6 +168,7 @@ export default {
                 }
             }
             commit('updateStandings', tmp);
+            console.log("Updatings mode:", mode);
             commit('updateMode', mode);
             commit('updateDate', date);
 
@@ -188,6 +189,7 @@ export default {
         addDataToCache({ state }, payload) {
             var key1;
             var mode = payload.mode;
+            var data = payload.data;
             if (Object.is(mode, undefined)) mode = state.currentMode;
             if (mode === 'drivers') {
                 key1 = 'DriverStandings';
@@ -205,7 +207,7 @@ export default {
                 cache = localStorage.getItem(key1);
             }
             cache = JSON.parse(cache);
-            cache[key2] = payload;
+            cache[key2] = data;
             localStorage.setItem(key1, JSON.stringify(cache));
         },
         checkIfCacheExists({ state }, payload) {
