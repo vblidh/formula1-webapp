@@ -116,9 +116,12 @@ export default {
                 }
             }
             if (Object.is(mode, undefined)) mode = state.currentMode;
-            var url = '/standings/' + mode + '?year=' + state.currentYear + '&round=' + state.currentRound;
-
-            var data = await dispatch('getDataFromAPI', { url }, { root: true });
+            var {exists, data} = await dispatch('checkIfCacheExists', { mode });
+            if (!exists) {
+                var url = '/standings/' + mode + '?year=' + state.currentYear + '&round=' + state.currentRound;
+                data = await dispatch('getDataFromAPI', { url }, { root: true });
+                dispatch('addDataToCache', data);
+            }
             var standings;
             var tmp = [];
             var st, driverName, teamName, country, points, position, wins, number, obj, date;
@@ -182,5 +185,51 @@ export default {
             commit('updateSeasonRounds', Number(rounds));
 
         },
+        addDataToCache({ state }, payload) {
+            var key1;
+            var mode = payload.mode;
+            if (Object.is(mode, undefined)) mode = state.currentMode;
+            if (mode === 'drivers') {
+                key1 = 'DriverStandings';
+            }
+            else if (mode === 'teams') {
+                key1 = "ConstructorStandings"
+            }
+            else {
+                return;
+            }
+            var key2 = String(state.currentYear) + "_" + String(state.currentRound);
+            var cache = localStorage.getItem(key1)
+            if (cache === null) {
+                localStorage.setItem(key1, JSON.stringify({}));
+                cache = localStorage.getItem(key1);
+            }
+            cache = JSON.parse(cache);
+            cache[key2] = payload;
+            localStorage.setItem(key1, JSON.stringify(cache));
+        },
+        checkIfCacheExists({ state }, payload) {
+            var key1;
+            var mode = payload.mode;
+            if (Object.is(mode, undefined)) mode = state.currentMode;
+            if (mode === 'drivers') {
+                key1 = 'DriverStandings';
+            }
+            else if (mode === 'teams') {
+                key1 = "ConstructorStandings"
+            }
+            else {
+                return;
+            }
+            var cache = localStorage.getItem(key1);
+            if (cache !== null) {
+                var key2 = String(state.currentYear) + "_" + String(state.currentRound);
+                if (!Object.is(JSON.parse(cache)[key2], undefined)) {
+                    console.log("Found cache", JSON.parse(cache)[key2]);
+                    return {exists: true, data:JSON.parse(cache)[key2]}
+                }
+            }
+            return {exists: false, data: {}};
+        }
     }
 };

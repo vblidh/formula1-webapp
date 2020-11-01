@@ -60,6 +60,7 @@
               disable-pagination
               :loading="isLoading"
               hide-default-footer
+              hide-default-header
               class="elevation-1"
               loading-text="Loading standings..."
               no-data-text="No standings found for those parameters"
@@ -88,14 +89,14 @@ export default {
   },
   computed: {
     ...mapGetters({
-      getItems: "StandingsModule/currentStandingsData",
-      getHeaders: "StandingsModule/currentStandingsHeader",
-      getRounds: "StandingsModule/totalRounds",
-      getRound: "StandingsModule/currentRound",
+      getItems: "Standings/currentStandingsData",
+      getHeaders: "Standings/currentStandingsHeader",
+      getRounds: "Standings/totalRounds",
+      getRound: "Standings/currentRound",
       getSeasons: "Seasons",
-      getMode: "StandingsModule/currentMode",
-      getYear: "StandingsModule/currentYear",
-      getDate: "StandingsModule/currentDate",
+      getMode: "Standings/currentMode",
+      getYear: "Standings/currentYear",
+      getDate: "Standings/currentDate",
     }),
     getTitle() {
       return this.getYear + " " + this.modeText + " World Championship";
@@ -112,14 +113,15 @@ export default {
       // var queries = Object.assign({}, this.$route.query);
       // queries.round = value;
       // this.$router.replace({ query: queries });
-      this.$store.commit("StandingsModule/updateRound", value);
-      this.$store.dispatch("StandingsModule/getNewStandings", {});
+      this.$store.commit("Standings/updateRound", value);
+      this.$store.dispatch("Standings/getNewStandings", {});
     },
     async onChangeYear(value) {
       console.log(value);
-      await this.$store.dispatch("StandingsModule/getNewStandings", { year: value, round: 1 });
-      await this.$store.dispatch("StandingsModule/getRoundsInYear");
+      await this.$store.dispatch("Standings/getNewStandings", { year: value, round: 1 });
+      await this.$store.dispatch("Standings/getRoundsInYear");
       this.title = this.getYear + " " + this.modeText + " World Championship";
+      this.round = 1;
     },
     nextRound() {
       if (this.getRound < this.getRounds) {
@@ -144,7 +146,7 @@ export default {
         mode = "teams";
         this.modeText = "Constructors";
       }
-      await this.$store.dispatch("StandingsModule/getNewStandings", { mode });
+      await this.$store.dispatch("Standings/getNewStandings", { mode });
     },
   },
   mounted() {
@@ -153,7 +155,7 @@ export default {
     } else {
       this.modeText = "Constructors";
     }
-    this.$store.dispatch("StandingsModule/getRoundsInYear");
+    this.$store.dispatch("Standings/getRoundsInYear");
   },
 };
 </script>
