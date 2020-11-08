@@ -7,7 +7,7 @@ Vue.use(Vuex)
 
 export default new Vuex.Store({
   state: {
-    Seasons: Array.from({length:71}, (_, i) => i + 1950) 
+    Seasons: Array(71).fill().map((_, i) => 2020-i),
   },
   getters: {
     Seasons: state => {

@@ -5,8 +5,7 @@
         <v-select
           hint="Choose a year"
           label="Season"
-          :items="Seasons"
-          v-model="Year"
+          :items="getSeasons"
           outlined
           @change="getRacesByYear"
         ></v-select>
@@ -15,17 +14,17 @@
         <v-select
           hint="Choose a race"
           label="Race"
-          :items="Races"
-          v-model="Round"
+          :items="getRaces"
           outlined
+          @change="changeChosenRace"
         ></v-select>
       </v-col>
       <v-col>
         <v-select
           label="Session"
           :items="Sessions"
-          v-model="ChosenSession"
           outlined
+          @change="changeMode"
         >
         </v-select>
       </v-col>
@@ -42,7 +41,7 @@
             {{ getRaceDate }}</v-card-title
           >
           <v-card-subtitle>{{ getCircuit }}</v-card-subtitle>
-          <RaceTable v-if="showTable" :headers="tableHeaders" :data="tableData">
+          <RaceTable :headers="getHeaders" :data="getResultData">
           </RaceTable>
         </v-card>
       </v-col>
@@ -53,17 +52,17 @@
 
 <script>
 import RaceTable from "@/tables/RaceTable.vue";
-import { mapGetters } from 'vuex';
+import { mapGetters } from "vuex";
 
 export default {
   props: {
     year: {
       type: String,
-      default: '2020',
+      default: undefined,
     },
     round: {
       type: String,
-      default: '1',
+      default: "1",
     },
   },
   components: {
@@ -81,32 +80,30 @@ export default {
       Year: this.year,
       Round: this.round,
       Races: [],
-      Seasons: [],
       ChosenSession: "",
       Sessions: ["Qualifying", "Race"],
     };
   },
   beforeMount() {
-    this.getRacesByYear();
-    this.getRaceResults();
-    for (let i = 2020; i > 1949; i--) {
-      this.Seasons.push({ text: String(i), value: i });
+    if (!Object.is(this.year, undefined)) {
+      this.$store.commit("Results/updateYear", this.year);
     }
+    this.getResults();
+    // this.getRacesByYear();
+    // this.getRaceResults();
   },
   computed: {
     ...mapGetters({
-      getYear: 'results/currentYear',
-      getRound: 'results/currentRound',
+      getSeasons: "Seasons",
+      getYear: "Results/currentYear",
+      getRound: "Results/currentRound",
+      getRaces: "Results/currentRaceList",
+      getRaceName: "Results/currentRaceName",
+      getRaceDate: "Results/currentRaceDate",
+      getCircuit: "Results/currentRaceCircuitName",
+      getResultData: "Results/resultsData",
+      getHeaders: "Results/currentHeader",
     }),
-    getRaceName() {
-      return this.RaceName;
-    },
-    getCircuit() {
-      return this.Circuit;
-    },
-    getRaceDate() {
-      return this.RaceDate;
-    },
   },
   methods: {
     async test() {
@@ -118,6 +115,15 @@ export default {
       } catch (error) {
         console.log(error);
       }
+    },
+    async changeChosenRace(round){
+      this.$store.commit('Results/updateRound', Number(round));
+      await this.$store.dispatch('Results/getNewResults', {});
+
+    },
+    async changeMode(mode){
+      this.$store.commit('Results/updateMode', mode.toLowerCase());
+      await this.$store.dispatch('Results/getNewResults', {});
     },
     addResultToCache(newKey, isRace = true) {
       var parsed;
@@ -137,7 +143,9 @@ export default {
         localStorage.setItem(item, JSON.stringify(parsed));
       }
     },
-    async getRacesByYear() {
+    async getRacesByYear(year) {
+      this.$store.dispatch("Results/getRacesInYear", { year });
+      /*
       var cachedRaces = localStorage.getItem("Races");
       var isDataCached = false;
       var parsed;
@@ -178,6 +186,7 @@ export default {
           localStorage.setItem("Races", JSON.stringify(toAdd));
         }
       }
+       */
     },
     checkCache(isRace) {
       var cacheExists = false;
@@ -206,19 +215,24 @@ export default {
       }
       return cacheExists;
     },
-    getResults() {
+    async getResults() {
+
+      await this.$store.dispatch('Results/getNewResults', {});
+      /*
       if (this.ChosenSession === "Race") {
         this.getRaceResults();
       } else {
         console.log("Getting qualification results");
         this.getQualiResults();
       }
+      */
     },
     async getQualiResults() {
       this.tableData = [];
       var cacheExists = this.checkCache(false);
       if (!cacheExists) {
-        var url = "/results/qualifying?year=" + this.Year + "&round=" + this.Round;
+        var url =
+          "/results/qualifying?year=" + this.Year + "&round=" + this.Round;
         var key = this.Year + "_" + this.Round;
         await this.axios
           .get(url)
@@ -227,7 +241,7 @@ export default {
         console.log(this.data);
         this.addResultToCache(key, false);
       }
-      console.log(this.data)
+      console.log(this.data);
       var results = this.data.results;
       var tmp = [];
       for (var i = 0; i < results.length; i++) {
@@ -295,11 +309,9 @@ export default {
       var url;
       if (this.Year && this.Round) {
         url = "/results/race?year=" + this.Year + "&round=" + this.Round;
-      }
-      else if (this.Year) {
-        url = "results/race/?year="+this.Year;
-      }
-      else {
+      } else if (this.Year) {
+        url = "results/race/?year=" + this.Year;
+      } else {
         url = "/results/race";
       }
       if (!cacheExists) {
@@ -330,7 +342,7 @@ export default {
         var obj = {
           Position: pos,
           Name: name,
-          Team: constructor,  
+          Team: constructor,
           Time: time,
           Points: points,
         };
@@ -352,11 +364,11 @@ export default {
         { text: "Points", value: "Points", divider: true, align: "center" },
       ];
       this.RaceName = this.data.race.name;
-      this.Circuit = this.data.race.circuit.name
+      this.Circuit = this.data.race.circuit.name;
       this.RaceDate = this.data.race.date;
       this.showTable = true;
     },
-  },  
+  },
 };
 </script>
 <style scoped>

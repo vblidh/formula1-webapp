@@ -168,7 +168,6 @@ export default {
                 }
             }
             commit('updateStandings', tmp);
-            console.log("Updatings mode:", mode);
             commit('updateMode', mode);
             commit('updateDate', date);
 

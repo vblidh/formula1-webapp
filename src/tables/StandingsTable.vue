@@ -60,7 +60,6 @@
               disable-pagination
               :loading="isLoading"
               hide-default-footer
-              hide-default-header
               class="elevation-1"
               loading-text="Loading standings..."
               no-data-text="No standings found for those parameters"
