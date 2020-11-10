@@ -2,6 +2,7 @@ import Vue from 'vue'
 import Vuex from 'vuex'
 import Standings from './modules/standings';
 import Results from './modules/results';
+import Drivers from './modules/drivers';
 
 Vue.use(Vuex)
 
@@ -29,5 +30,6 @@ export default new Vuex.Store({
   modules: {
     Standings,
     Results,
+    Drivers,
   }
 })
