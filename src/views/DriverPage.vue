@@ -7,6 +7,11 @@
             {{ getChosen.first_name }} {{ getChosen.last_name }}
             <v-spacer></v-spacer> {{ getChosen.number }}
           </v-card-title>
+          <v-card-text>
+            Wins: {{ getWins }} <br />
+            Podiums: {{ getPodiums }} <br />
+            Pole positions:{{ getPoles }} (May be incorrect for older drivers)
+          </v-card-text>
         </v-card>
       </v-col>
       <v-col>
@@ -39,8 +44,6 @@ export default {
   },
   data() {
     return {
-      chosenDriver: {},
-      drivers: [],
     };
   },
   methods: {
@@ -49,6 +52,7 @@ export default {
     },
     selectDriver(id) {
       this.$store.dispatch("Drivers/setChosenDriver", { id });
+      this.$store.dispatch("Drivers/getDriverStats");
     },
   },
   computed: {
@@ -56,6 +60,9 @@ export default {
     ...mapGetters({
       getDrivers: "Drivers/DriverList",
       getChosen: "Drivers/ChosenDriver",
+      getPodiums: "Drivers/Podiums",
+      getWins: "Drivers/Wins",
+      getPoles: "Drivers/Poles",
     }),
   },
   async beforeMount() {
@@ -64,6 +71,7 @@ export default {
       !(Object.is(this.driverId, undefined) || isNaN(Number(this.driverId)))
     ) {
       this.selectDriver(Number(this.driverId));
+      this.$store.dispatch("Drivers/getDriverStats");
       console.log(this.getChosen);
     }
   },

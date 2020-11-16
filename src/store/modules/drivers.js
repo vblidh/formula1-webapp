@@ -3,13 +3,18 @@ export default {
     state: {
         DriverList: [],
         ChosenDriver: {},
+        Podiums: 0,
+        Wins: 0,
+        Poles: 0,
     },
     getters: {
         DriverList: state => {
             return state.DriverList;
         },
         ChosenDriver: state => state.ChosenDriver,
-
+        Podiums: state => state.Podiums,
+        Wins: state => state.Wins,
+        Poles: state => state.Poles,
     },
     mutations: {
         updateDriverList(state, payload) {
@@ -18,6 +23,15 @@ export default {
         updateChosen(state, payload) {
             state.ChosenDriver = payload;
         },
+        updatePodiums(state, payload) {
+            state.Podiums = payload;
+        },
+        updatePoles(state, payload) {
+            state.Poles = payload;
+        },
+        updateWins(state, payload) {
+            state.Wins = payload;
+        }
     },
     actions: {
         async getDrivers({ state, commit, dispatch }) {
@@ -37,6 +51,18 @@ export default {
             if (Object.is(driver, undefined)) return false;
             commit('updateChosen', driver);
             return true;
-        }
+        },
+        async getDriverStats({ state, commit, dispatch }) {
+            var podiumUrl = '/drivers/podiums/' + state.ChosenDriver.id;
+            var poleUrl = '/drivers/poles/' + state.ChosenDriver.id
+            const podiumTask = dispatch('getDataFromAPI', { url: podiumUrl }, { root: true });
+            const poleTask = dispatch('getDataFromAPI', { url: poleUrl }, { root: true });
+            var [raceData, poles] = [await podiumTask, await poleTask];
+            console.log("Podiums:", raceData);
+            console.log("Poles:", poles);
+            commit('updatePodiums', raceData.podiums);
+            commit('updateWins', raceData.wins);
+            commit('updatePoles', poles);
+        },
     }
 };
