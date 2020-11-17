@@ -8,9 +8,10 @@
             <v-spacer></v-spacer> {{ getChosen.number }}
           </v-card-title>
           <v-card-text>
-            Wins: {{ getWins }} <br />
+            Races in total: {{ getTotalRaces }} <br />
             Podiums: {{ getPodiums }} <br />
-            Pole positions:{{ getPoles }} (May be incorrect for older drivers)
+            Wins: {{ getWins }} <br />
+            Pole positions: {{ getPoles }} (May be incorrect for older drivers)
           </v-card-text>
         </v-card>
       </v-col>
@@ -20,8 +21,35 @@
           item-value="id"
           :item-text="getItemText"
           @change="selectDriver"
-        >
+          outlined
+          dense
+          clearable
+          filled
+          >
         </v-autocomplete>
+      </v-col>
+    </v-row>
+    <v-row>
+      <v-col></v-col>
+      <v-col></v-col>
+      <v-col cols="6">
+        <v-card color="red accent-4">
+          <v-card-title>Latest results</v-card-title>
+          <v-container>
+            <v-data-table
+              :items="getLastResults"
+              :headers="tableHeaders"
+              :server-items-length="getTotalRaces"
+              :page="getPage"
+              :items-per-page="getPageSize"
+              @update:items-per-page="onNewPageSize"
+              @update:page="onNewPage"
+              disable-sort
+              fixed-header
+            >
+            </v-data-table>
+          </v-container>
+        </v-card>
       </v-col>
     </v-row>
     <v-row>
@@ -44,6 +72,17 @@ export default {
   },
   data() {
     return {
+      tableHeaders: [
+        { text: "Race", value: "Race", align: "center", divider: true },
+        { text: "Date", value: "Date", align: "center", divider: true },
+        {
+          text: "Starting grid",
+          value: "Grid",
+          align: "center",
+          divider: true,
+        },
+        { text: "Position", value: "Pos", align: "center", divider: true },
+      ],
     };
   },
   methods: {
@@ -53,6 +92,15 @@ export default {
     selectDriver(id) {
       this.$store.dispatch("Drivers/setChosenDriver", { id });
       this.$store.dispatch("Drivers/getDriverStats");
+      this.$store.dispatch("Drivers/getLastRaces");
+    },
+    onNewPageSize(size) {
+      this.$store.commit("Drivers/updatePageSize", size);
+      this.$store.dispatch("Drivers/getLastRaces");
+    },
+    onNewPage(page) {
+      this.$store.commit("Drivers/updateCurrentPage", page);
+      this.$store.dispatch("Drivers/getLastRaces");
     },
   },
   computed: {
@@ -60,9 +108,13 @@ export default {
     ...mapGetters({
       getDrivers: "Drivers/DriverList",
       getChosen: "Drivers/ChosenDriver",
+      getPageSize: "Drivers/PageSize",
+      getPage: "Drivers/CurrentPage",
       getPodiums: "Drivers/Podiums",
       getWins: "Drivers/Wins",
       getPoles: "Drivers/Poles",
+      getLastResults: "Drivers/LastResults",
+      getTotalRaces: "Drivers/TotalRaces",
     }),
   },
   async beforeMount() {
@@ -72,7 +124,7 @@ export default {
     ) {
       this.selectDriver(Number(this.driverId));
       this.$store.dispatch("Drivers/getDriverStats");
-      console.log(this.getChosen);
+      this.$store.dispatch("Drivers/getLastRaces");
     }
   },
 };

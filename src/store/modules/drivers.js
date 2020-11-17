@@ -1,8 +1,13 @@
+
 export default {
     namespaced: true,
     state: {
         DriverList: [],
         ChosenDriver: {},
+        LastRaces: [],
+        PageSize : 7,
+        CurrentPage: 1,
+        TotalRaces: 0,
         Podiums: 0,
         Wins: 0,
         Poles: 0,
@@ -14,7 +19,12 @@ export default {
         ChosenDriver: state => state.ChosenDriver,
         Podiums: state => state.Podiums,
         Wins: state => state.Wins,
+        TotalRaces: state => state.TotalRaces,
+        CurrentPage: state => state.CurrentPage,
+        PageSize: state => state.PageSize,
         Poles: state => state.Poles,
+        LastResults: state => state.LastRaces,
+        
     },
     mutations: {
         updateDriverList(state, payload) {
@@ -22,6 +32,15 @@ export default {
         },
         updateChosen(state, payload) {
             state.ChosenDriver = payload;
+        },
+        updateTotalRaces(state, payload){
+            state.TotalRaces = payload;
+        },
+        updatePageSize(state, payload){
+            state.PageSize = payload;
+        },
+        updateCurrentPage(state, payload){
+            state.CurrentPage = payload;
         },
         updatePodiums(state, payload) {
             state.Podiums = payload;
@@ -31,7 +50,10 @@ export default {
         },
         updateWins(state, payload) {
             state.Wins = payload;
-        }
+        },
+        updateLastRaces(state, payload) {
+            state.LastRaces = payload;
+        },
     },
     actions: {
         async getDrivers({ state, commit, dispatch }) {
@@ -58,11 +80,40 @@ export default {
             const podiumTask = dispatch('getDataFromAPI', { url: podiumUrl }, { root: true });
             const poleTask = dispatch('getDataFromAPI', { url: poleUrl }, { root: true });
             var [raceData, poles] = [await podiumTask, await poleTask];
-            console.log("Podiums:", raceData);
-            console.log("Poles:", poles);
             commit('updatePodiums', raceData.podiums);
             commit('updateWins', raceData.wins);
             commit('updatePoles', poles);
         },
+        async getLastRaces({ state, commit, dispatch }, payload) {
+            var page, pageSize;
+            if (!Object.is(payload, undefined)) {
+                page = Object.is(payload.page, undefined) ? state.CurrentPage : payload.page;
+                pageSize = Object.is(payload.pageSize) ? state.PageSize : payload.pageSize;
+            }
+            else {
+                page = state.CurrentPage;
+                pageSize = state.PageSize;
+            }
+            
+            var url = '/results/race/' + state.ChosenDriver.id + '?page=' + page + '&page_size=' + pageSize;
+            console.log(url);
+            var response = await dispatch('getDataFromAPI', { url }, { root: true });
+            console.log(response);
+            var data = response.data;
+            var tmp = [];
+            var obj;
+            data.forEach(result => {
+                obj = {
+                    Race: result.race.name,
+                    Date: result.race.date,
+                    Pos: result.position_order,
+                    Grid: result.grid
+                };
+                tmp.push(obj);
+            });
+            
+            commit('updateTotalRaces', response.total_entries);
+            commit('updateLastRaces', tmp);
+        }
     }
 };
