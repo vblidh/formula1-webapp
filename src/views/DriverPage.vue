@@ -1,7 +1,28 @@
 <template>
   <v-container>
     <v-row>
-      <v-col cols="8">
+      <v-col cols="3">
+        <v-virtual-scroll
+          height="150"
+          :items="getDrivers"
+          item-height="40"
+          bench="10"
+        >
+          <template v-slot:default="{ item }">
+            <v-list-item :key="item.id" @click="onClickVirtual(item)">
+              <v-list-item-content>
+                <v-list-item-title>
+                  <h4>
+                    {{ item.first_name }}
+                    {{ item.last_name }}
+                  </h4>
+                </v-list-item-title>
+              </v-list-item-content>
+            </v-list-item>
+          </template>
+        </v-virtual-scroll>
+      </v-col>
+      <v-col cols="6">
         <v-card>
           <v-card-title>
             {{ getChosen.first_name }} {{ getChosen.last_name }}
@@ -18,14 +39,16 @@
       <v-col>
         <v-autocomplete
           :items="getDrivers"
-          item-value="id"
           :item-text="getItemText"
+          item-value="id"
           @change="selectDriver"
           outlined
           dense
           clearable
           filled
-          >
+          append-icon="mdi-racing-helmet"
+          placeholder="Search for a driver"
+        >
         </v-autocomplete>
       </v-col>
     </v-row>
@@ -92,6 +115,7 @@ export default {
     selectDriver(id) {
       this.$store.dispatch("Drivers/setChosenDriver", { id });
       this.$store.dispatch("Drivers/getDriverStats");
+      this.$store.commit("Drivers/updateCurrentPage", 1);
       this.$store.dispatch("Drivers/getLastRaces");
     },
     onNewPageSize(size) {
@@ -100,6 +124,12 @@ export default {
     },
     onNewPage(page) {
       this.$store.commit("Drivers/updateCurrentPage", page);
+      this.$store.dispatch("Drivers/getLastRaces");
+    },
+    onClickVirtual(driver) {
+      this.$store.commit("Drivers/updateChosen", driver);
+      this.$store.commit("Drivers/updateCurrentPage", 1);
+      this.$store.dispatch("Drivers/getDriverStats");
       this.$store.dispatch("Drivers/getLastRaces");
     },
   },

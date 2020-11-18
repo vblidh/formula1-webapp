@@ -120,6 +120,12 @@ export default {
             if (!exists) {
                 var url = '/standings/' + mode + '?year=' + state.currentYear + '&round=' + state.currentRound;
                 data = await dispatch('getDataFromAPI', { url }, { root: true });
+                if (mode == "drivers") {
+                    if (data.driver_standings[0].standings.length === 0) return; 
+                }
+                else {
+                    if (data.team_standings[0].standings.length === 0) return;    
+                }
                 dispatch('addDataToCache', {data, mode});
             }
             var standings;
