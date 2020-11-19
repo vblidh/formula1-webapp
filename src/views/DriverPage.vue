@@ -1,9 +1,9 @@
 <template>
-  <v-container>
+  <v-container fluid>
     <v-row>
-      <v-col cols="3">
+      <v-col cols="2">
         <v-virtual-scroll
-          height="150"
+          height="670"
           :items="getDrivers"
           item-height="40"
           bench="10"
@@ -22,46 +22,69 @@
           </template>
         </v-virtual-scroll>
       </v-col>
-      <v-col cols="6">
-        <v-card>
-          <v-card-title>
-            {{ getChosen.first_name }} {{ getChosen.last_name }}
-            <v-spacer></v-spacer> {{ getChosen.number }}
-          </v-card-title>
-          <v-card-text>
-            Races in total: {{ getTotalRaces }} <br />
-            Podiums: {{ getPodiums }} <br />
-            Wins: {{ getWins }} <br />
-            Pole positions: {{ getPoles }} (May be incorrect for older drivers)
-          </v-card-text>
-        </v-card>
-      </v-col>
       <v-col>
-        <v-autocomplete
-          :items="getDrivers"
-          :item-text="getItemText"
-          item-value="id"
-          @change="selectDriver"
-          outlined
-          dense
-          clearable
-          filled
-          append-icon="mdi-racing-helmet"
-          placeholder="Search for a driver"
-        >
-        </v-autocomplete>
+        <v-row>
+          <v-col cols="8">
+            <v-card>
+              <v-card-title>
+                {{ getChosen.first_name }} {{ getChosen.last_name }}
+                <v-spacer></v-spacer> {{ getChosen.number }}
+              </v-card-title>
+              <v-card-text>
+                Races in total: {{ getTotalRaces }} <br />
+                Podiums: {{ getPodiums }} <br />
+                Wins: {{ getWins }} <br />
+                Pole positions: {{ getPoles }} (May be incorrect for older
+                drivers)
+              </v-card-text>
+            </v-card>
+          </v-col>
+          <v-col>
+            <v-autocomplete
+              :items="getDrivers"
+              :item-text="getItemText"
+              item-value="id"
+              @change="selectDriver"
+              outlined
+              dense
+              clearable
+              filled
+              append-icon="mdi-racing-helmet"
+              placeholder="Search for a driver"
+              :menu-props="{ maxHeight: 150 }"
+            >
+            </v-autocomplete>
+          </v-col>
+        </v-row>
+        <v-row>
+          <v-col>
+            <iframe width="100%" height="550" :src="getChosen.wiki_url" />
+          </v-col>
+        </v-row>
       </v-col>
     </v-row>
     <v-row>
-      <v-col></v-col>
-      <v-col></v-col>
-      <v-col cols="6">
+      <v-col>
         <v-card color="red accent-4">
-          <v-card-title>Latest results</v-card-title>
+          <v-card-title>Season results</v-card-title>
+          <v-container>
+            <v-data-table
+              :items="getSeasonResults"
+              :headers="seasonResultTableHeaders"
+              :items-per-page="seasonResultsPageSize"
+              disable-sort
+            >
+            </v-data-table>
+          </v-container>
+        </v-card>
+      </v-col>
+      <v-col>
+        <v-card color="red accent-4">
+          <v-card-title>Race results</v-card-title>
           <v-container>
             <v-data-table
               :items="getLastResults"
-              :headers="tableHeaders"
+              :headers="raceResultTableHeaders"
               :server-items-length="getTotalRaces"
               :page="getPage"
               :items-per-page="getPageSize"
@@ -74,13 +97,6 @@
           </v-container>
         </v-card>
       </v-col>
-    </v-row>
-    <v-row>
-      <v-col></v-col>
-      <v-col cols="10">
-        <iframe width="100%" height="700" :src="getChosen.wiki_url" />
-      </v-col>
-      <v-col></v-col>
     </v-row>
   </v-container>
 </template>
@@ -95,7 +111,8 @@ export default {
   },
   data() {
     return {
-      tableHeaders: [
+      seasonResultsPageSize: 5,
+      raceResultTableHeaders: [
         { text: "Race", value: "Race", align: "center", divider: true },
         { text: "Date", value: "Date", align: "center", divider: true },
         {
@@ -104,6 +121,13 @@ export default {
           align: "center",
           divider: true,
         },
+        { text: "Position", value: "Pos", align: "center", divider: true },
+      ],
+      seasonResultTableHeaders: [
+        { text: "Year", value: "Year", align: "center", divider: true },
+        { text: "Team", value: "Team", align: "center", divider: true },
+        { text: "Wins", value: "Wins", align: "center", divider: true },
+        { text: "Points", value: "Points", align: "center", divider: true },
         { text: "Position", value: "Pos", align: "center", divider: true },
       ],
     };
@@ -117,6 +141,7 @@ export default {
       this.$store.dispatch("Drivers/getDriverStats");
       this.$store.commit("Drivers/updateCurrentPage", 1);
       this.$store.dispatch("Drivers/getLastRaces");
+      this.$store.dispatch("Drivers/getSeasonResults");
     },
     onNewPageSize(size) {
       this.$store.commit("Drivers/updatePageSize", size);
@@ -131,10 +156,10 @@ export default {
       this.$store.commit("Drivers/updateCurrentPage", 1);
       this.$store.dispatch("Drivers/getDriverStats");
       this.$store.dispatch("Drivers/getLastRaces");
+      this.$store.dispatch("Drivers/getSeasonResults");
     },
   },
   computed: {
-    text: (item) => item.first_name + " " + item.last_name,
     ...mapGetters({
       getDrivers: "Drivers/DriverList",
       getChosen: "Drivers/ChosenDriver",
@@ -145,6 +170,7 @@ export default {
       getPoles: "Drivers/Poles",
       getLastResults: "Drivers/LastResults",
       getTotalRaces: "Drivers/TotalRaces",
+      getSeasonResults: "Drivers/SeasonResults",
     }),
   },
   async beforeMount() {
