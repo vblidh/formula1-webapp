@@ -49,7 +49,8 @@
               dense
               clearable
               filled
-              append-icon="mdi-racing-helmet"
+              prepend-icon="mdi-racing-helmet"
+              append-icon=""
               placeholder="Search for a driver"
               :menu-props="{ maxHeight: 150 }"
             >
