@@ -1,5 +1,5 @@
 export default {
-    naespaced: true,
+    namespaced: true,
     state: {
         Circuits: [],
         ChosenCircuitId: 0,
@@ -26,9 +26,24 @@ export default {
     },
     actions: {
         async getCircuits({ state, commit, dispatch }) {
+            if (state.Circuits.length > 0) return;
             var url = '/circuits';
             var data = await dispatch('getDataFromAPI', { url }, { root: true });
-            commit('updateRaceList', data.circuits);
-        }
+            commit('updateCircuits', data.circuits);
+        },
+        async getCircuitRaces({ state, commit, dispatch }, payload) {
+            if (!Object.is(payload, undefined)) {
+                if (!(Object.is(payload.id, undefined) || isNaN(Number(payload.id)))) {
+                    commit('updateCircuitId', payload.id)
+                }
+            }
+            var url = '/circuits/' + state.chosenCircuitId + '/results';
+            var resp = await dispatch('getDataFromAPI', { url }, { root: true });
+            var data = resp.data;
+            var keys = Object.keys(data);
+            console.log(keys);
+            // for (let i = 0; i < keys.length; i++) {
+            // }
+        },
     }
 };

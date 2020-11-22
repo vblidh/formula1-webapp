@@ -37,7 +37,12 @@ const routes = [
     path: '/standings',
     name: 'Standings',
     component: StandingsPage,
-  }
+  },
+  {
+    path: '/circuits',
+    name: 'Circuits',
+    component: () => import('../views/CircuitPage.vue'),
+  },
 ]
 
 const router = new VueRouter({
