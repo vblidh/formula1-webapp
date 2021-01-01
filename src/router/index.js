@@ -4,6 +4,7 @@ import Home from '../views/Home.vue'
 import RaceView from '../views/RaceView.vue';
 import DriverPage from '../views/DriverPage.vue';
 import StandingsPage from '../views/StandingsPage.vue';
+// import CircuitPage from '../views/CircuitPage.vue';
 
 Vue.use(VueRouter)
 
