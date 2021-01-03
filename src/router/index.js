@@ -23,7 +23,7 @@ const routes = [
     component: () => import(/* webpackChunkName: "about" */ '../views/About.vue')
   },
   {
-    path: '/races/:year?/:round?',
+    path: '/races/:year?/:round?/:raceId?',
     name: "Races",
     component: RaceView,
     props: true

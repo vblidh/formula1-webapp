@@ -41,8 +41,7 @@
             {{ getRaceDate }}</v-card-title
           >
           <v-card-subtitle>{{ getCircuit }}</v-card-subtitle>
-          <RaceTable :headers="getHeaders" :data="getResultData">
-          </RaceTable>
+          <RaceTable :headers="getHeaders" :data="getResultData"> </RaceTable>
         </v-card>
       </v-col>
       <v-col cols="2"></v-col>
@@ -64,6 +63,10 @@ export default {
       type: String,
       default: undefined,
     },
+    raceId: {
+      type: Number,
+      default: 0,
+    },
   },
   components: {
     RaceTable,
@@ -74,14 +77,20 @@ export default {
     };
   },
   beforeMount() {
-    if (!Object.is(this.year, undefined)) {
-      this.$store.commit("Results/updateYear", this.year);
+    console.log(this.raceId);
+    if (this.raceId !== 0) {
+      this.$store.dispatch("Results/getRaceResultsById", this.raceId);
+      this.getRacesByYear();
+    } else {
+      if (!Object.is(this.year, undefined)) {
+        this.$store.commit("Results/updateYear", this.year);
+      }
+      if (!(Object.is(this.round, undefined) || isNaN(Number(this.round)))) {
+        this.$store.commit("updateRound", Number(this.round));
+      }
+      this.getRacesByYear();
+      this.getResults();
     }
-    if (!(Object.is(this.round, undefined) || isNaN(Number(this.round)))) {
-      this.$store.commit('updateRound', Number(this.round));
-    }
-    this.getRacesByYear();
-    this.getResults();
   },
   computed: {
     ...mapGetters({
@@ -97,29 +106,19 @@ export default {
     }),
   },
   methods: {
-    // async test() {
-    //   try {
-    //     var resp = await this.$store.dispatch("getDataFromAPI", {
-    //       url: "results/race?year=2020&round=11",
-    //     });
-    //     console.log("Resp from store:", resp);
-    //   } catch (error) {
-    //     console.log(error);
-    //   }
-    // },
-    async changeChosenRace(round){
-      this.$store.commit('Results/updateRound', Number(round));
-      await this.$store.dispatch('Results/getNewResults', {});
+    async changeChosenRace(round) {
+      this.$store.commit("Results/updateRound", Number(round));
+      await this.$store.dispatch("Results/getNewResults", {});
     },
-    async changeMode(mode){
-      this.$store.commit('Results/updateMode', mode.toLowerCase());
-      await this.$store.dispatch('Results/getNewResults', {});
+    async changeMode(mode) {
+      this.$store.commit("Results/updateMode", mode.toLowerCase());
+      await this.$store.dispatch("Results/getNewResults", {});
     },
     async getRacesByYear(year) {
       this.$store.dispatch("Results/getRacesInYear", { year });
     },
     async getResults() {
-      await this.$store.dispatch('Results/getNewResults', {});
+      await this.$store.dispatch("Results/getNewResults", {});
     },
   },
 };

@@ -6,7 +6,7 @@ export default {
         ChosenDriver: {},
         LastRaces: [],
         SeasonResults: [],
-        PageSize: 7,
+        PageSize: 5,
         CurrentPage: 1,
         TotalRaces: 0,
         Podiums: 0,
@@ -75,8 +75,8 @@ export default {
             return true;
         },
         async getDriverStats({ state, commit, dispatch }) {
-            var podiumUrl = '/drivers/podiums/' + state.ChosenDriver.id;
-            var poleUrl = '/drivers/poles/' + state.ChosenDriver.id
+            var podiumUrl = '/drivers/' + state.ChosenDriver.id + '/podiums';
+            var poleUrl = '/drivers/' + state.ChosenDriver.id + '/poles';
             const podiumTask = dispatch('getDataFromAPI', { url: podiumUrl }, { root: true });
             const poleTask = dispatch('getDataFromAPI', { url: poleUrl }, { root: true });
             var [raceData, poles] = [await podiumTask, await poleTask];
@@ -95,7 +95,7 @@ export default {
                 pageSize = state.PageSize;
             }
 
-            var url = '/results/race/' + state.ChosenDriver.id + '?page=' + page + '&page_size=' + pageSize;
+            var url = '/drivers/' + state.ChosenDriver.id + '/results?page=' + page + '&page_size=' + pageSize;
             var response = await dispatch('getDataFromAPI', { url }, { root: true });
             var data = response.data;
             var tmp = [];

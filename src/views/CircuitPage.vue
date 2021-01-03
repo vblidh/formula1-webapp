@@ -16,17 +16,17 @@
       </v-col>
       <v-col>
         <v-card color="red accent-4">
-          <v-card-title>
+          <v-card-title class="text-h3">
+            <v-spacer />
+            Winners over the years
+            <v-spacer />
+          </v-card-title>
+          <v-card-subtitle class="text-h5">
             {{ CircuitName }}
             <v-spacer> </v-spacer>
-            {{CircuitCity}} - {{CircuitCountry}} 
-          </v-card-title>
-
-          <v-card-subtitle>
-            <v-spacer> </v-spacer>
-            Winners
-            <v-spacer> </v-spacer>
+            {{ CircuitCity }} - {{ CircuitCountry }}
           </v-card-subtitle>
+
           <v-divider></v-divider>
           <v-data-table
             :items="getRaces"
@@ -98,9 +98,9 @@ export default {
       this.$store.commit("Circuits/updatePageSize", pageSize);
       this.$store.dispatch("Circuits/getCircuitRaces");
     },
-    onRowClicked(row){
-      console.log(row);
-    }
+    onRowClicked(row) {
+      this.$router.push({ name: "Races", params: { raceId: row.raceId } });
+    },
   },
 };
 </script>

@@ -38,9 +38,7 @@ export default {
         currentMode: 'race',
     },
     getters: {
-        resultsData: state => {
-            return state.resultsData;
-        },
+        resultsData: state =>  state.resultsData,
         currentHeader: state => {
             if (state.currentMode == 'race') {
                 return state.raceHeaders;
@@ -49,9 +47,7 @@ export default {
                 return state.qualifyingHeaders;
             }
         },
-        currentYear: state => {
-            return state.currentYear;
-        },
+        currentYear: state => state.currentYear,
         currentRound: state => state.currentRound,
         currentMode: state => state.currentMode,
         currentRace: state => state.currentRace,
@@ -99,7 +95,6 @@ export default {
                     commit('updateYear', payload.year);
                 }
             }
-            console.log("Getting races")
             var cachedRaces = localStorage.getItem('Races')
             var raceList;
             if (cachedRaces !== null) {
@@ -136,9 +131,9 @@ export default {
 
         },
         async getNewResults({ state, commit, dispatch }, payload) {
-            console.log("Year:", state.currentYear);
-            console.log("Round: ", state.currentRound);
-            console.log("Mode:", state.currentMode);
+            // console.log("Year:", state.currentYear);
+            // console.log("Round: ", state.currentRound);
+            // console.log("Mode:", state.currentMode);
             var mode = state.currentMode;
             if (!Object.is(payload, undefined)) {
                 if (!Object.is(payload.mode, undefined)) {
@@ -158,76 +153,92 @@ export default {
                 data = await dispatch('getDataFromAPI', { url }, { root: true });
                 dispatch('addDataToCache', { data, mode });
             }
-
-            var results, driver, name, constructor, pos, obj, i;
-            var tmp = [];
-            console.log("data: ", data);
+            var results = data.data[0].results;
+            commit('updateCurrentRace', data.data[0].race);
             if (mode === 'race') {
-                results = data.data[0].results
-                console.log("race: ", data.data[0].race);
-                commit('updateCurrentRace', data.data[0].race);
-                for (i = 0; i < results.length; i++) {
-                    driver = results[i].driver;
-                    name = driver.first_name + " " + driver.last_name;
-                    pos = results[i].position_order;
-                    constructor = results[i].team.name;
-                    var time;
-                    var status = results[i].status;
-                    var grid = results[i].grid;
-                    if (status === "Finished") {
-                        time = results[i].time;
-                    } else if (status.startsWith("+")) {
-                        time = status;
-                    } else {
-                        time = "DNF (" + status + ")";
-                    }
-                    var points = results[i].points;
-                    obj = {
-                        Position: pos,
-                        Name: name,
-                        Team: constructor,
-                        Time: time,
-                        Points: points,
-                        Grid: grid,
-                    };
-                    tmp.push(obj);
-                }
+                dispatch('compileResultData', results);
             }
             else {
-                results = data.data[0].results;
-                commit('updateCurrentRace', data.data[0].race);
-                for (i = 0; i < results.length; i++) {
-                    driver = results[i].driver;
-                    name = driver.first_name + " " + driver.last_name;
-                    pos = results[i].position;
-                    constructor = results[i].team.name;
-                    var q2;
-                    var q3;
-                    var q1 = results[i].Q1;
-                    if (q1 == null) {
-                        q1 = q2 = q3 = "Did not qualify";
-                    } else {
-                        q2 = results[i].Q2;
-                        if (q2 == null) {
-                            q2 = q3 = "-";
-                        } else {
-                            q3 = results[i].Q3;
-                        }
-                    }
-                    obj = {
-                        Position: pos,
-                        Name: name,
-                        Team: constructor,
-                        Q1: q1,
-                        Q2: q2,
-                        Q3: q3,
-                    };
-                    tmp.push(obj);
-                }
+                dispatch('compileQualiData', results);
             }
             commit('updateMode', mode);
-            commit('updateResultsData', tmp);
 
+        },
+        async getRaceResultsById({ commit, dispatch }, id) {
+            commit('updateMode', 'race');
+            var url = '/results/race/' + id
+            var resp = await dispatch('getDataFromAPI', { url }, { root: true });
+            var race = resp.data.race;
+            var results = resp.data.results
+            commit('updateYear', Number(race.year));
+            commit('updateRound', Number(race.round));
+            commit('updateCurrentRace', race);
+            dispatch('compileResultData', results);
+        },
+        compileQualiData({ commit }, results) {
+            var tmp = [];
+            var i, driver, name, pos, constructor, q1, q2, q3, obj;
+            for (i = 0; i < results.length; i++) {
+                driver = results[i].driver;
+                name = driver.first_name + " " + driver.last_name;
+                pos = results[i].position;
+                constructor = results[i].team.name;
+                q2;
+                q3;
+                q1 = results[i].Q1;
+                if (q1 == null) {
+                    q1 = q2 = q3 = "Did not qualify";
+                } else {
+                    q2 = results[i].Q2;
+                    if (q2 == null) {
+                        q2 = q3 = "-";
+                    } else {
+                        q3 = results[i].Q3;
+                    }
+                }
+                obj = {
+                    Position: pos,
+                    Name: name,
+                    Team: constructor,
+                    Q1: q1,
+                    Q2: q2,
+                    Q3: q3,
+                };
+                tmp.push(obj);
+            }
+            commit('updateResultsData', tmp);
+        },
+        compileResultData({ commit }, results) {
+            console.log("Results:", results);
+            var tmp = [];
+            var name, pos, driver, constructor, time, status, grid, points, obj;
+            for (var i = 0; i < results.length; i++) {
+                driver = results[i].driver;
+                name = driver.first_name + " " + driver.last_name;
+                pos = results[i].position_order;
+                constructor = results[i].team.name;
+                status = results[i].status;
+                grid = results[i].grid;
+
+                if (status === "Finished") {
+                    time = results[i].time;
+                } else if (status.startsWith("+")) {
+                    time = status;
+                } else {
+                    time = "DNF (" + status + ")";
+                }
+                points = results[i].points;
+                obj = {
+                    Position: pos,
+                    Name: name,
+                    Team: constructor,
+                    Time: time,
+                    Points: points,
+                    Grid: grid,
+                };
+                tmp.push(obj);
+            }
+            commit('updateResultsData', tmp);
         },
         tryGetCachedData({ state }, payload) {
             var mode;
