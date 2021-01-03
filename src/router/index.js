@@ -40,9 +40,10 @@ const routes = [
     component: StandingsPage,
   },
   {
-    path: '/circuits',
+    path: '/circuits/:circuitId?',
     name: 'Circuits',
     component: () => import('../views/CircuitPage.vue'),
+    props: true,
   },
 ]
 

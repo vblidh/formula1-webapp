@@ -62,9 +62,9 @@ export default {
             if (Object.is(state.currentRace.date, undefined)) return "";
             return state.currentRace.date;
         },
-        currentRaceCircuitName: state => {
+        currentRaceCircuit: state => {
             if (Object.is(state.currentRace.circuit, undefined)) return "";
-            return state.currentRace.circuit.name;
+            return state.currentRace.circuit;
         },
     },
     mutations: {

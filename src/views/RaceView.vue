@@ -40,7 +40,17 @@
             {{ getRaceName }} <v-spacer></v-spacer>
             {{ getRaceDate }}</v-card-title
           >
-          <v-card-subtitle>{{ getCircuit }}</v-card-subtitle>
+          <v-card-subtitle>
+            <router-link
+              :to="{
+                name: 'Circuits',
+                params: { circuitId: String(this.getCircuit.id) },
+              }"
+              class="circuit-link"
+            >
+              {{ getCircuit.name }}
+            </router-link>
+          </v-card-subtitle>
           <RaceTable :headers="getHeaders" :data="getResultData"> </RaceTable>
         </v-card>
       </v-col>
@@ -77,7 +87,6 @@ export default {
     };
   },
   beforeMount() {
-    console.log(this.raceId);
     if (this.raceId !== 0) {
       this.$store.dispatch("Results/getRaceResultsById", this.raceId);
       this.getRacesByYear();
@@ -100,7 +109,7 @@ export default {
       getRaces: "Results/currentRaceList",
       getRaceName: "Results/currentRaceName",
       getRaceDate: "Results/currentRaceDate",
-      getCircuit: "Results/currentRaceCircuitName",
+      getCircuit: "Results/currentRaceCircuit",
       getResultData: "Results/resultsData",
       getHeaders: "Results/currentHeader",
     }),
@@ -130,4 +139,8 @@ export default {
 .v-card__subtitle {
   color: white !important;
 }
+.circuit-link{
+  color: black !important;
+}
+
 </style>

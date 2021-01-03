@@ -22,7 +22,7 @@
             <v-spacer />
           </v-card-title>
           <v-card-subtitle class="text-h5">
-            {{ CircuitName }}
+              {{ CircuitName }}
             <v-spacer> </v-spacer>
             {{ CircuitCity }} - {{ CircuitCountry }}
           </v-card-subtitle>
@@ -56,6 +56,12 @@
 <script>
 import { mapGetters } from "vuex";
 export default {
+  props: {
+    circuitId: {
+      type: String,
+      default: "",
+    },
+  },
   data() {
     return {};
   },
@@ -81,9 +87,21 @@ export default {
       var circuit = this.getChosenCircuit;
       return Object.is(circuit, undefined) ? "" : circuit.city;
     },
+    CircuitId: function () {
+      var circuit = this.getChosenCircuit;
+      return Object.is(circuit, undefined) ? "" : circuit.id;
+    },
   },
   async beforeMount() {
     await this.$store.dispatch("Circuits/getCircuits");
+    console.log(this.getCircuits);
+    if (this.circuitId) {
+      var chosen = this.getCircuits.find(
+        (circuit) => circuit.id == this.circuitId
+      );
+      console.log("Circuit from prop:", chosen);
+      this.$store.dispatch("Circuits/getCircuitRaces", { circuit: chosen });
+    }
   },
   methods: {
     selectCircuit(circuit) {
