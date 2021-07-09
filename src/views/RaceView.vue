@@ -28,9 +28,6 @@
         >
         </v-select>
       </v-col>
-      <v-col>
-        <v-btn x-large @click="getResults">Collect Data</v-btn>
-      </v-col>
     </v-row>
     <v-row>
       <v-col cols="2"></v-col>
@@ -51,6 +48,9 @@
               {{ getCircuit.name }}
             </router-link>
           </v-card-subtitle>
+          <v-card-text>
+            <v-btn rounded outlined @click="loadLapView"> Load lap-by-lap view </v-btn>
+          </v-card-text>
           <RaceTable :headers="getHeaders" :data="getResultData"> </RaceTable>
         </v-card>
       </v-col>
@@ -129,6 +129,9 @@ export default {
     async getResults() {
       await this.$store.dispatch("Results/getNewResults", {});
     },
+    async loadLapView() {
+      console.log("Do stuff");
+    },
   },
 };
 </script>
@@ -139,8 +142,12 @@ export default {
 .v-card__subtitle {
   color: white !important;
 }
-.circuit-link{
+.v-card__text {
+  text-align: center !important;
+  font-size: large !important;
+  color: white !important;
+}
+.circuit-link {
   color: black !important;
 }
-
 </style>

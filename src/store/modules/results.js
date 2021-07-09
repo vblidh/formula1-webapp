@@ -36,9 +36,10 @@ export default {
         currentYear: 2020,
         currentRound: 1,
         currentMode: 'race',
+        lapTimes: []
     },
     getters: {
-        resultsData: state =>  state.resultsData,
+        resultsData: state => state.resultsData,
         currentHeader: state => {
             if (state.currentMode == 'race') {
                 return state.raceHeaders;
@@ -66,6 +67,7 @@ export default {
             if (Object.is(state.currentRace.circuit, undefined)) return "";
             return state.currentRace.circuit;
         },
+        lapTimes: state => state.lapTimes,
     },
     mutations: {
         updateRound(state, payload) {
@@ -86,6 +88,9 @@ export default {
         },
         updateRaceList(state, payload) {
             state.currentRaceList = payload;
+        },
+        updateLapTimeList(state, payload) {
+            state.lapTimes = payload;
         }
     },
     actions: {
@@ -239,6 +244,14 @@ export default {
                 tmp.push(obj);
             }
             commit('updateResultsData', tmp);
+        },
+        async getLaptimes({ state, commit, dispatch }) {
+            var url = '/laptimes/' + state.currentRace.raceId;
+
+            var resp = await dispatch('getDataFromAPI', { url }, { root: true });
+            
+            console.log(resp.data);
+            commit('updateLapTimeList', resp.data);
         },
         tryGetCachedData({ state }, payload) {
             var mode;

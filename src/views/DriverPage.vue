@@ -13,8 +13,8 @@
               <v-list-item-content>
                 <v-list-item-title>
                   <h4>
-                    {{ item.first_name }}
-                    {{ item.last_name }}
+                    {{ item.forename }}
+                    {{ item.surname }}
                   </h4>
                 </v-list-item-title>
               </v-list-item-content>
@@ -23,7 +23,7 @@
         </v-virtual-scroll>
       </v-col>
       <v-col>
-        <v-row>
+        <v-row class="hoho">
           <v-col cols="8">
             <v-card>
               <v-card-title>
@@ -59,44 +59,48 @@
         </v-row>
         <v-row>
           <v-col>
-            <iframe width="100%" height="550" :src="getChosen.wiki_url" />
+            <v-card color="red accent-4">
+              <v-card-title>Season results</v-card-title>
+              <v-container>
+                <v-data-table
+                  :items="getSeasonResults"
+                  :headers="seasonResultTableHeaders"
+                  :items-per-page="seasonResultsPageSize"
+                  disable-sort
+                  loading-text="Retrieving driver results..."
+                  :loading="isRetreivingSeasonResults"
+                >
+                </v-data-table>
+              </v-container>
+            </v-card>
+          </v-col>
+          <v-col>
+            <v-card color="red accent-4">
+              <v-card-title>Race results</v-card-title>
+              <v-container>
+                <v-data-table
+                  :items="getLastResults"
+                  :headers="raceResultTableHeaders"
+                  :server-items-length="getTotalRaces"
+                  :page="getPage"
+                  :items-per-page="getPageSize"
+                  @update:items-per-page="onNewPageSize"
+                  @update:page="onNewPage"
+                  disable-sort
+                  fixed-header
+                  loading-text="Retrieving driver results..."
+                  :loading="isRetreivingRaceResults"
+                >
+                </v-data-table>
+              </v-container>
+            </v-card>
           </v-col>
         </v-row>
       </v-col>
     </v-row>
     <v-row>
       <v-col>
-        <v-card color="red accent-4">
-          <v-card-title>Season results</v-card-title>
-          <v-container>
-            <v-data-table
-              :items="getSeasonResults"
-              :headers="seasonResultTableHeaders"
-              :items-per-page="seasonResultsPageSize"
-              disable-sort
-            >
-            </v-data-table>
-          </v-container>
-        </v-card>
-      </v-col>
-      <v-col>
-        <v-card color="red accent-4">
-          <v-card-title>Race results</v-card-title>
-          <v-container>
-            <v-data-table
-              :items="getLastResults"
-              :headers="raceResultTableHeaders"
-              :server-items-length="getTotalRaces"
-              :page="getPage"
-              :items-per-page="getPageSize"
-              @update:items-per-page="onNewPageSize"
-              @update:page="onNewPage"
-              disable-sort
-              fixed-header
-            >
-            </v-data-table>
-          </v-container>
-        </v-card>
+        <iframe width="100%" height="550" :src="getChosen.wiki_url" />
       </v-col>
     </v-row>
   </v-container>
@@ -135,7 +139,7 @@ export default {
   },
   methods: {
     getItemText(item) {
-      return item.first_name + " " + item.last_name;
+      return item.forename+ " " + item.surname;
     },
     selectDriver(id) {
       this.$store.dispatch("Drivers/setChosenDriver", { id });
@@ -172,6 +176,8 @@ export default {
       getLastResults: "Drivers/LastResults",
       getTotalRaces: "Drivers/TotalRaces",
       getSeasonResults: "Drivers/SeasonResults",
+      isRetreivingRaceResults: "Drivers/IsLoadingRaceResults",
+      isRetreivingSeasonResults: "Drivers/IsLoadingSeasonResults",
     }),
   },
   async beforeMount() {

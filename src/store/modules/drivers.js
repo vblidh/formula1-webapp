@@ -12,6 +12,8 @@ export default {
         Podiums: 0,
         Wins: 0,
         Poles: 0,
+        IsLoadingRaceResults: false,
+        IsLoadingSeasonResults: false,
     },
     getters: {
         DriverList: state => {
@@ -26,6 +28,8 @@ export default {
         Poles: state => state.Poles,
         LastResults: state => state.LastRaces,
         SeasonResults: state => state.SeasonResults,
+        IsLoadingRaceResults: state => state.IsLoadingRaceResults,
+        IsLoadingSeasonResults: state => state.IsLoadingSeasonResults
     },
     mutations: {
         updateDriverList(state, payload) {
@@ -58,13 +62,20 @@ export default {
         updateSeasonResults(state, payload) {
             state.SeasonResults = payload;
         },
+        toggleIsLoadingRaceResults(state) {
+            state.IsLoadingRaceResults = !state.IsLoadingRaceResults;
+        },
+        toggleIsLoadingSeasonResults(state) {
+            state.IsLoadingSeasonResults = !state.IsLoadingSeasonResults;
+        },
     },
     actions: {
         async getDrivers({ state, commit, dispatch }) {
             if (state.DriverList.length > 0) return; // Drivers already loaded 
             var url = "/drivers";
             var data = await dispatch('getDataFromAPI', { url }, { root: true });
-            commit('updateDriverList', data.Drivers);
+            console.log(data);
+            commit('updateDriverList', data);
         },
         setChosenDriver({ state, commit }, payload) {
             if (Object.is(payload, undefined) || Object.is(payload.id, undefined)) return false;
@@ -79,10 +90,10 @@ export default {
             var poleUrl = '/drivers/' + state.ChosenDriver.id + '/poles';
             const podiumTask = dispatch('getDataFromAPI', { url: podiumUrl }, { root: true });
             const poleTask = dispatch('getDataFromAPI', { url: poleUrl }, { root: true });
-            var [raceData, poles] = [await podiumTask, await poleTask];
+            var [raceData, poleData] = [await podiumTask, await poleTask];
             commit('updatePodiums', raceData.podiums);
             commit('updateWins', raceData.wins);
-            commit('updatePoles', poles);
+            commit('updatePoles', poleData.poles);
         },
         async getLastRaces({ state, commit, dispatch }, payload) {
             var page, pageSize;
@@ -94,8 +105,8 @@ export default {
                 page = state.CurrentPage;
                 pageSize = state.PageSize;
             }
-
-            var url = '/drivers/' + state.ChosenDriver.id + '/results?page=' + page + '&page_size=' + pageSize;
+            commit('toggleIsLoadingRaceResults');
+            var url = '/results/driver/' + state.ChosenDriver.id + '?page=' + page + '&page_size=' + pageSize;
             var response = await dispatch('getDataFromAPI', { url }, { root: true });
             var data = response.data;
             var tmp = [];
@@ -104,16 +115,18 @@ export default {
                 obj = {
                     Race: result.race.name,
                     Date: result.race.date,
-                    Pos: result.position_order,
+                    Pos: result.position,
                     Grid: result.grid
                 };
                 tmp.push(obj);
             });
 
-            commit('updateTotalRaces', response.total_entries);
+            commit('updateTotalRaces', response.pagination.totalItems);
             commit('updateLastRaces', tmp);
+            commit('toggleIsLoadingRaceResults');
         },
         async getSeasonResults({ state, commit, dispatch }) {
+            commit('toggleIsLoadingSeasonResults');
             var url = '/standings/drivers/' + state.ChosenDriver.id;
             var response = await dispatch('getDataFromAPI', { url }, { root: true });
             var data = response.data;
@@ -130,6 +143,7 @@ export default {
                 tmp.push(obj);
             });
             commit('updateSeasonResults', tmp);
+            commit('toggleIsLoadingSeasonResults');
         }
     }
 };
