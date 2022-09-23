@@ -101,7 +101,7 @@ export default {
       return this.getYear + " " + this.modeText + " World Championship";
     },
     getSwitchState() {
-      return this.getMode === "drivers" ? 1 : 0;
+      return this.getMode === "driver" ? 1 : 0;
     },
     getSubtitle() {
       return this.getDate + " - Round " + this.getRound;
@@ -137,19 +137,19 @@ export default {
       }
     },
     async swapMode(value) {
-      var mode;
+      let mode;
       if (value) {
-        mode = "drivers";
+        mode = "driver";
         this.modeText = "Drivers";
       } else {
-        mode = "teams";
+        mode = "constructor";
         this.modeText = "Constructors";
       }
       await this.$store.dispatch("Standings/getNewStandings", { mode });
     },
   },
   mounted() {
-    if (this.getMode === "drivers") {
+    if (this.getMode === "driver") {
       this.modeText = "Drivers";
     } else {
       this.modeText = "Constructors";

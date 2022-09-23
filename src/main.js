@@ -9,7 +9,7 @@ import store from './store'
 
 Vue.config.productionTip = false
 
-axios.defaults.baseURL = "https://127.0.0.1:5001/api";
+axios.defaults.baseURL = "https://localhost:5002/api";
 Vue.use(VueCookies);
 Vue.use(VueAxios, axios);
 

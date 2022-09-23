@@ -14,9 +14,9 @@ export default {
     };
   },
   async mounted() {
-    var year = this.$route.query.year;
-    var round = this.$route.query.round;
-    var mode = this.$route.query.mode;
+    const year = this.$route.query.year;
+    const round = this.$route.query.round;
+    const mode = this.$route.query.mode;
     if (!(Object.is(year, undefined) || isNaN(Number(year)))) {
       this.$store.commit(
         "Standings/updateYear",
@@ -26,7 +26,7 @@ export default {
     if (!(Object.is(round, undefined) || isNaN(Number(round)))) {
       this.$store.commit("Standings/updateRound", Number(round));
     }
-    if (mode === "drivers" || mode === "teams") {
+    if (mode === "driver" || mode === "constructor") {
       this.$store.commit("Standings/updateMode", mode);
     }
 

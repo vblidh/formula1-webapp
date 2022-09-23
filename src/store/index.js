@@ -9,7 +9,7 @@ Vue.use(Vuex)
 
 export default new Vuex.Store({
   state: {
-    Seasons: Array(71).fill().map((_, i) => 2020-i),
+    Seasons: Array(73).fill().map((_, i) => 2022-i),
   },
   getters: {
     Seasons: state => {

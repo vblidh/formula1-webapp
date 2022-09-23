@@ -61,7 +61,8 @@ export default {
         },
         currentRaceDate: state => {
             if (Object.is(state.currentRace.date, undefined)) return "";
-            return state.currentRace.date;
+            const date = state.currentRace.date.split('T')[0];
+            return date;
         },
         currentRaceCircuit: state => {
             if (Object.is(state.currentRace.circuit, undefined)) return "";
@@ -111,9 +112,8 @@ export default {
                     return;
                 }
             }
-            var url = '/races?year=' + state.currentYear;
-            var data = await dispatch('getDataFromAPI', { url }, { root: true });
-            var races = data.races;
+            var url = `/races?year= ${state.currentYear}&pageSize=30&order=ascending`;
+            const {data: races} = await dispatch('getDataFromAPI', { url }, { root: true });
             raceList = [];
             var obj;
             races.forEach(race => {
@@ -152,14 +152,14 @@ export default {
                 }
             }
 
-            var { exists, data } = await dispatch('tryGetCachedData', { mode });
+            let { exists, data } = await dispatch('tryGetCachedData', { mode });
             if (!exists) {
                 var url = '/results/' + mode + '?year=' + state.currentYear + '&round=' + state.currentRound;
                 data = await dispatch('getDataFromAPI', { url }, { root: true });
                 dispatch('addDataToCache', { data, mode });
             }
-            var results = data.data[0].results;
-            commit('updateCurrentRace', data.data[0].race);
+            const results = data.results;
+            commit('updateCurrentRace', data.race);
             if (mode === 'race') {
                 dispatch('compileResultData', results);
             }
@@ -171,7 +171,7 @@ export default {
         },
         async getRaceResultsById({ commit, dispatch }, id) {
             commit('updateMode', 'race');
-            var url = '/results/race/' + id
+            const url = '/results/race/' + id
             var resp = await dispatch('getDataFromAPI', { url }, { root: true });
             var race = resp.data.race;
             var results = resp.data.results
@@ -215,24 +215,25 @@ export default {
         },
         compileResultData({ commit }, results) {
             console.log("Results:", results);
-            var tmp = [];
-            var name, pos, driver, constructor, time, status, grid, points, obj;
-            for (var i = 0; i < results.length; i++) {
-                driver = results[i].driver;
-                name = driver.first_name + " " + driver.last_name;
-                pos = results[i].position_order;
-                constructor = results[i].team.name;
-                status = results[i].status;
-                grid = results[i].grid;
+            let tmp = [];
+            const { drivers: driverResults } = results;
+            let name, pos, driver, constructor, time, status, grid, points, obj;
+            for (let i = 0; i < driverResults.length; i++) {
+                driver = driverResults[i].driver;
+                name = `${driver.forename} ${driver.surname}`;
+                pos = driverResults[i].position;
+                constructor = driverResults[i].constructor.name;
+                status = driverResults[i].status;
+                grid = driverResults[i].grid;
 
                 if (status === "Finished") {
-                    time = results[i].time;
+                    time = driverResults[i].time;
                 } else if (status.startsWith("+")) {
                     time = status;
                 } else {
                     time = "DNF (" + status + ")";
                 }
-                points = results[i].points;
+                points = driverResults[i].points;
                 obj = {
                     Position: pos,
                     Name: name,
