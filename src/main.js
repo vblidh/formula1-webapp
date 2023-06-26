@@ -1,23 +1,42 @@
-import Vue from 'vue'
+import { createApp } from 'vue'
+import { createPinia } from 'pinia'
+import { createVuetify } from 'vuetify'
+import * as components from 'vuetify/components'
+import { VDataTable } from 'vuetify/labs/VDataTable'
+import * as directives from 'vuetify/directives'
+import { aliases, mdi } from 'vuetify/iconsets/mdi' 
+import colors from 'vuetify/lib/util/colors'
+import "@mdi/font/css/materialdesignicons.css";
+
 import App from './App.vue'
 import router from './router'
-import vuetify from './plugins/vuetify';
-import VueCookies from 'vue-cookies';
-import axios from 'axios';
-import VueAxios from 'vue-axios';
-import store from './store'
 
-Vue.config.productionTip = false
 
-axios.defaults.baseURL = "https://localhost:5002/api";
-Vue.use(VueCookies);
-Vue.use(VueAxios, axios);
+const vuetify = createVuetify({
+  components: { ...components, VDataTable },
+  icons: {
+    defaultSet: 'mdi',
+    aliases,
+    sets: {
+      mdi,
+    },
+  },
+  theme: {
+    themes: {
+      light: {
+        dark: false,
+        colors: {
+          primary: colors.blue.lighten1
+        }
+      }
+    }
+  },
+  directives
+})
 
-Vue.$cookies.config('30d');
-// var _lsTotal=0,_xLen,_x;for(_x in localStorage){ if(!localStorage.hasOwnProperty(_x)){continue;} _xLen= ((localStorage[_x].length + _x.length)* 2);_lsTotal+=_xLen; console.log(_x.substr(0,50)+" = "+ (_xLen/1024).toFixed(2)+" KB")};console.log("Total = " + (_lsTotal / 1024).toFixed(2) + " KB");
-new Vue({
-  router,
-  vuetify,
-  store,
-  render: h => h(App)
-}).$mount('#app')
+const app = createApp(App)
+app.use(createPinia())
+app.use(router)
+app.use(vuetify)
+
+app.mount('#app')
