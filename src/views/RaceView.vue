@@ -17,7 +17,7 @@ const seasonStore = useSeasonsStore()
 const raceId = ref(0)
 const race = ref({})
 const selectedSeason = ref('')
-const roundsInSelectedSeason = ref(0)
+const racesInSelectedSeason = ref(0)
 const selectedRound = ref(1)
 
 const headers = [
@@ -62,7 +62,6 @@ const headers = [
 onMounted(async () => {
   let fetchedRace
   const p = route.params
-  console.log(seasonStore.getSeasons.length)
   if (seasonStore.getSeasons.length === 0) {
     const seasons = await fetchData('/api/seasons')
     seasonStore.storeSeasons(seasons.sort((s1, s2) => s2.year - s1.year))
@@ -92,8 +91,10 @@ const onSeasonSelected = async (e) => {
   // TODO check store first
   const year = e.target.value
   const roundsInYear = await fetchData(`/api/races/rounds/${year}`)
-  roundsInSelectedSeason.value = roundsInYear.rounds
-  console.log(roundsInSelectedSeason.value)
+  if (roundsInYear.rounds > 0) {
+    racesInSelectedSeason.value = roundsInYear.races
+    selectedRound.value = 1
+  }
 }
 
 const onRoundSelected = (e) => {
@@ -127,7 +128,7 @@ const onButtonClicked = async () => {
           </v-col>
           <v-col cols="4">
             <select v-model="selectedRound" class="round-select" @click="onRoundSelected">
-              <option v-for="round in Array.from({ length: roundsInSelectedSeason }, ((_, i) => i + 1))">{{ round }}
+              <option v-for="(race, i) in racesInSelectedSeason" :value="i + 1">{{ race }}
               </option>
             </select>
           </v-col>
