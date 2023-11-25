@@ -8,6 +8,7 @@ const props = defineProps({
   hidePagination: Boolean
 })
 
+const pageSizes = [10, 25, 50, 100]
 const sortDirection = ref('asc')
 const sortCol = ref({ key: 'name', type: 'string' })
 const pageSize = ref(25)
@@ -56,7 +57,7 @@ const sortedTable = computed(() => {
 
 
 <template>
-  <v-container v-if="items && items.length > 0" class="table-container">
+  <v-container fluid v-if="items && items.length > 0" class="table-container">
     <v-row>
       <table class="f1-data-table">
         <thead>
@@ -79,10 +80,7 @@ const sortedTable = computed(() => {
         <!-- <v-select label="Page size" :items="[25, 50, 100]" variant="solo"></v-select> -->
         <label style="font-size: large; margin-right: 2%; " for="page-size">Page size</label>
         <select id="page-size" v-model="pageSize">
-          <option value=10>10</option>
-          <option value=25>25</option>
-          <option value=50>50</option>
-          <option value=100>100</option>
+          <option v-for="size in pageSizes" :value="size">{{ size }}</option>
         </select>
       </v-col>
       <v-col cols="2">

@@ -74,9 +74,6 @@ onMounted(async () => {
     const query = route.query
     fetchedRaces = await fetchData(`/api/races?year=${query.year}&pageSize=30`)
   }
-  else {
-    const races = await fetchData('/api/races')
-  }
   raceId.value = fetchedRace.id
   raceStore.storeRace(fetchedRace)
   race.value = fetchedRace
@@ -97,7 +94,7 @@ const onSeasonSelected = async (e) => {
   }
 }
 
-const onRoundSelected = (e) => {
+const onRoundSelected = (e) => {  
   selectedRound.value = e.target.value
 }
 
@@ -112,6 +109,7 @@ const onButtonClicked = async () => {
   }
 }
 </script>
+
 <template>
   <div>
     <v-card>
